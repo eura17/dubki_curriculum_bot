@@ -53,7 +53,9 @@ P.S. По всем вопросам и предложениям писать @eu
 
                     delta = abs((time[0] * 60 + time[1]) - (departureTime[0] * 60 + departureTime[1]))
                     textDelta = ' (через {})'
-                    if delta % 10 == 1:
+                    if 11 <= delta <= 19:
+                        addDelta = textDelta.format('{} минут'.format(delta))
+                    elif delta % 10 == 1:
                         addDelta = textDelta.format('{} минуту'.format(delta))
                     elif delta % 10 in [2, 3, 4]:
                         addDelta = textDelta.format('{} минуты'.format(delta))
@@ -91,7 +93,9 @@ P.S. По всем вопросам и предложениям писать @eu
 
                     delta = abs((time[0] * 60 + time[1]) - (departureTime[0] * 60 + departureTime[1]))
                     textDelta = ' (через {})'
-                    if delta % 10 == 1:
+                    if 11 <= delta <= 19:
+                        addDelta = textDelta.format('{} минут'.format(delta))
+                    elif delta % 10 == 1:
                         addDelta = textDelta.format('{} минуту'.format(delta))
                     elif delta % 10 in [2, 3, 4]:
                         addDelta = textDelta.format('{} минуты'.format(delta))
