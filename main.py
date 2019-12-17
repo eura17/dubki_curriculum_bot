@@ -146,7 +146,7 @@ P.S. По всем вопросам и предложениям писать @eu
             message = 'Список электричек на ближайший час:'
             for line in relevant:
                 message += ('\n' + line)
-            message += '\n\nБлижайшие автобусы можешь посмотреть по команде /buses'
+            message += '\n\nБлижайшие автобусы /buses'
 
         return message
 
