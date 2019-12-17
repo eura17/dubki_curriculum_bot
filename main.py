@@ -611,7 +611,7 @@ class Admin:
                 break
         if not isDateExists:
             currentRow = fullStatisticsSheet.max_row + 1
-            forTotal = '=СУММ(C{}:F{})'.format(currentRow, currentRow)
+            forTotal = '=SUM(C{}:F{})'.format(currentRow, currentRow)
             totalCell = fullStatisticsSheet.cell(row=currentRow, column=8)
             totalCell.value = forTotal
         fullStatisticsSheet.cell(row=currentRow, column=1).value = addDate
@@ -632,7 +632,7 @@ class Admin:
                 break
         if not isUserIdExists:
             currentRow = usersStatisticsSheet.max_row + 1
-            forTotal = '=СУММ(D{}:G{})'.format(currentRow, currentRow)
+            forTotal = '=SUM(D{}:G{})'.format(currentRow, currentRow)
             totalCell = usersStatisticsSheet.cell(row=currentRow, column=8)
             totalCell.value = forTotal
         usersStatisticsSheet.cell(row=currentRow, column=1).value = userID
