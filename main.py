@@ -10,6 +10,7 @@ import requests
 import datetime
 import os
 import shutil
+import openpyxl as xl
 
 
 class Answers:
@@ -498,6 +499,37 @@ class Setup:
             date = today.date()
             return date, time
 
+    @staticmethod
+    def createWorkbook():
+        if 'statistics.xlsx' not in os.listdir(os.getcwd()):
+            wb = xl.workbook.Workbook()
+            wb.active.title = 'full_statistics'
+            wb.create_sheet('users_statistics', 1)
+
+            fullStat = wb['full_statistics']
+            names1 = {'A1': 'data',
+                      'B1': 'new_users',
+                      'C1': 'buses_calls',
+                      'D1': 'slavyanki_calls',
+                      'E1': 'trains_calls',
+                      'F1': 'file_calls',
+                      'G1': 'total_calls'}
+            for elem in names1:
+                fullStat[elem] = names1[elem]
+
+            usersStat = wb['users_statistics']
+            names2 = {'A1': 'id',
+                      'B1': 'start_data',
+                      'C1': 'last_call_data',
+                      'D1': 'buses_calls',
+                      'E1': 'slavyanki_calls',
+                      'F1': 'trains_calls',
+                      'G1': 'file_calls',
+                      'H1': 'total_calls'}
+            for elem in names2:
+                usersStat[elem] = names2[elem]
+            wb.save(filename='statistics.xlsx')
+
 
     @staticmethod
     def setup():
@@ -507,6 +539,7 @@ class Setup:
         Setup.creatorBusesCurriculum()
         lastUpdateBuses = datetime.datetime.now() + datetime.timedelta(hours=3)
         Setup.creatorTrainsCurriculum()
+        Setup.createWorkbook()
         end = datetime.datetime.now()
         print('Первый запуск прошел успешно ({}). Бот готов к работе.'.format(end-start))
         lastUpdateTrains = end + datetime.timedelta(hours=3)
@@ -545,7 +578,7 @@ class Setup:
         updateBusesThread.start()
 
 
-class Admin():
+class Admin:
     def __init__(self):
         pass
 
@@ -554,6 +587,66 @@ class Admin():
         answer = '''Последнее обновление расписания электричек: *{}*
 Последнее обновление расписания автобусов: *{}*'''.format(lastUpdateTrains, lastUpdateBuses)
         return answer
+
+    @staticmethod
+    def userData(userID, func='start'):
+        funcs = {'start': 2,
+                 'buses': 3,
+                 'slavyanki': 4,
+                 'trains': 5,
+                 'file': 6,
+                 'total': 7}
+
+        wb = xl.load_workbook(filename='statistics.xlsx')  # statistics.xlsx
+
+        # работа с full_statistics
+        fullStatisticsSheet = wb['full_statistics']
+        addDate = str(datetime.datetime.today().strftime('%d.%m.%Y'))
+        # добавление новой даты, если еще не было
+        isDateExists = False
+        for i in range(1, fullStatisticsSheet.max_row + 1):
+            if addDate == fullStatisticsSheet.cell(row=i, column=1).value:
+                isDateExists = True
+                currentRow = i
+                break
+        if not isDateExists:
+            currentRow = fullStatisticsSheet.max_row + 1
+            forTotal = '=СУММ(C{}:F{})'.format(currentRow, currentRow)
+            totalCell = fullStatisticsSheet.cell(row=currentRow, column=8)
+            totalCell.value = forTotal
+        fullStatisticsSheet.cell(row=currentRow, column=1).value = addDate
+        # регистрация функции
+        currentCell = fullStatisticsSheet.cell(row=currentRow, column=funcs[func])
+        if not currentCell.value:
+            currentCell.value = 0
+        currentCell.value += 1
+
+        #работа с users_statitstics
+        usersStatisticsSheet = wb['users_statistics']
+        # добавление нового юзера, если его еще не было
+        isUserIdExists = False
+        for i in range(1, usersStatisticsSheet.max_row + 1):
+            if userID == usersStatisticsSheet.cell(row=i, column=1).value:
+                isUserIdExists = True
+                currentRow = i
+                break
+        if not isUserIdExists:
+            currentRow = usersStatisticsSheet.max_row + 1
+            forTotal = '=СУММ(D{}:G{})'.format(currentRow, currentRow)
+            totalCell = usersStatisticsSheet.cell(row=currentRow, column=8)
+            totalCell.value = forTotal
+        usersStatisticsSheet.cell(row=currentRow, column=1).value = userID
+
+        # регистраиця функций
+        usersStatisticsSheet.cell(row=currentRow, column=3).value = addDate  # last_call_date
+        currentCell = usersStatisticsSheet.cell(row=currentRow, column=funcs[func] + 1)
+        if func == 'start':
+            currentCell.value = addDate
+        else:
+            if not currentCell.value:
+                currentCell.value = 0
+            currentCell.value += 1
+        wb.save('statistics.xlsx')
 
 
 Setup.setup()

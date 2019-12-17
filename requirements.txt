@@ -4,11 +4,14 @@ certifi==2019.9.11
 chardet==3.0.4
 Click==7.0
 configobj==5.0.6
+et-xmlfile==1.0.1
 httplib2==0.14.0
 idna==2.8
+jdcal==1.4.1
 lxml==4.4.1
 nibabel==2.5.1
 numpy==1.17.3
+openpyxl==3.0.2
 packaging==19.2
 pandas==0.25.2
 pydot==1.4.1

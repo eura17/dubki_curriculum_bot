@@ -13,7 +13,7 @@ bot = telebot.TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, main.Answers.startMessage())
-
+    main.Admin.userData(message.chat.id)
 
 @bot.message_handler(commands=['help'])
 def help_message(message):
@@ -28,6 +28,7 @@ def buses_message(message):
     bot.send_message(message.chat.id, 'Выбери направление',
                      reply_markup=keyboard1)
     bot.register_next_step_handler(message, buses_message_main)
+    main.Admin.userData(message.chat.id, func='buses')
 
 
 def buses_message_main(message):
@@ -47,6 +48,7 @@ def slavyanki_message(message):
     keyboard2.row('Дубки ---> Славянский бульвар', 'Славянский бульвар ---> Дубки')
     bot.send_message(message.chat.id, 'Выбери направление', reply_markup=keyboard2)
     bot.register_next_step_handler(message, slavyanki_message_main)
+    main.Admin.userData(message.chat.id, func='slavyanki')
 
 
 def slavyanki_message_main(message):
@@ -72,6 +74,7 @@ def trains_message(message):
     bot.send_message(message.chat.id, 'Выбери направление',
                      reply_markup=keyboard3)
     bot.register_next_step_handler(message, trains_message_main)
+    main.Admin.userData(message.chat.id, func='trains')
 
 
 def trains_message_main(message):
@@ -95,12 +98,22 @@ def trains_message_main(message):
 def file_message(message):
     doc = open('Расписание.pdf', 'rb')
     bot.send_document(message.chat.id, doc)
+    main.Admin.userData(message.chat.id, func='file')
 
 
 @bot.message_handler(commands=['check_updates'])
 def check_updates(message):
     if message.from_user.id == myID:
         bot.send_message(message.chat.id, main.Admin.checkUpdates(), parse_mode='Markdown')
+    else:
+        bot.send_message(message.chat.id, 'Недостаточно прав для вызова этой команды.')
+
+
+@bot.message_handler(commands=['get_statistics'])
+def get_statistics(message):
+    doc = open('statistics.xlsx', 'rb')
+    if message.from_user.id == myID:
+        bot.send_document(message.chat.id, doc)
     else:
         bot.send_message(message.chat.id, 'Недостаточно прав для вызова этой команды.')
 
