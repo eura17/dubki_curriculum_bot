@@ -166,7 +166,6 @@ class Setup:
         for a in groupPage.find_all('a', href=True):
             if 'Расписание' in str(a):
                 linkToDoc = a['href']
-                print(linkToDoc)
                 download(linkToDoc, filename='Расписание.pdf')
                 break
 
