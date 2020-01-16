@@ -658,4 +658,6 @@ try:
                            sslmode='require')
 except Exception as e:
     print(e)
+else:
+    print('connected')
     
