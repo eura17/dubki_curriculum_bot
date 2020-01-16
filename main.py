@@ -505,7 +505,7 @@ class Setup:
         cur = con.cursor()
         # создание таблицы full_statistics
         cur.execute('''CREATE TABLE FULL_STATISTICS
-        DATE DATE PRIMARY KEY
+        (DATE DATE PRIMARY KEY
         START_CALLS INT
         HELP_CALLS INT
         BUSES_CALLS INT
@@ -515,7 +515,7 @@ class Setup:
         TOTAL_CALLS INT);''')
         # создание таблицы users_statistics
         cur.execute('''CREATE TABLE USERS_STATISTICS
-        ID INT PRIMARY KEY NOT NULL
+        (ID INT PRIMARY KEY NOT NULL
         START_DATE DATE
         LASTCALL_DATE DATE
         TOTAL_CALLS INT);''')
