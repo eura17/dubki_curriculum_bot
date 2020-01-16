@@ -11,6 +11,7 @@ import datetime
 import os
 import shutil
 import openpyxl as xl
+import psycopg2 as sql
 
 
 class Answers:
@@ -22,7 +23,7 @@ class Answers:
         message = '''Привет, дубчанин!
 Я бот, с помощью которого ты сможешь узнать расписание ближайших автобусов.
 Да, тебе не придется лезть в группу в ВК, я сделаю это за тебя.
-Инструкция по работе со мной доступна по команде /help
+Инструкция по работе /help
 P.S. По всем вопросам и предложениям писать @eura71'''
         return message
 
@@ -39,7 +40,6 @@ P.S. По всем вопросам и предложениям писать @eu
     def busesMessage(direction):
         buses, time = Setup.timeAndWeekday()
         hours, minutes = time[0], time[1]
-        startPoint = direction.split('-')[0]
 
         relevantBuses = []
 
@@ -119,7 +119,6 @@ P.S. По всем вопросам и предложениям писать @eu
 
     @staticmethod
     def trainsMessage(direction):
-        apikey = '7cf62f2f-49ce-4194-afae-fe86b8001542'
         startStation, endStation = direction.split('-')
         hours, minutes = Setup.timeAndWeekday(forYandex=True)[1]
         relevant = []
@@ -150,7 +149,6 @@ P.S. По всем вопросам и предложениям писать @eu
             message += '\n\nБлижайшие автобусы /buses'
 
         return message
-
 
 
 class Setup:
@@ -502,36 +500,28 @@ class Setup:
             return date, time
 
     @staticmethod
-    def createWorkbook():
-        if 'statistics.xlsx' not in os.listdir(os.getcwd()):
-            wb = xl.workbook.Workbook()
-            wb.active.title = 'full_statistics'
-            wb.create_sheet('users_statistics', 1)
-
-            fullStat = wb['full_statistics']
-            names1 = {'A1': 'data',
-                      'B1': 'new_users',
-                      'C1': 'buses_calls',
-                      'D1': 'slavyanki_calls',
-                      'E1': 'trains_calls',
-                      'F1': 'file_calls',
-                      'G1': 'total_calls'}
-            for elem in names1:
-                fullStat[elem] = names1[elem]
-
-            usersStat = wb['users_statistics']
-            names2 = {'A1': 'id',
-                      'B1': 'start_data',
-                      'C1': 'last_call_data',
-                      'D1': 'buses_calls',
-                      'E1': 'slavyanki_calls',
-                      'F1': 'trains_calls',
-                      'G1': 'file_calls',
-                      'H1': 'total_calls'}
-            for elem in names2:
-                usersStat[elem] = names2[elem]
-            wb.save(filename='statistics.xlsx')
-
+    def createDataBase():
+        con = sql.connect(os.environ['DATABASE_URI'],
+                                 sslmode='require')
+        cur = con.cursor()
+        # создание таблицы full_statistics
+        cur.execute('''CREATE TABLE FULL_STATISTICS
+        DATE DATE PRIMARY KEY
+        START_CALLS INT
+        HELP_CALLS INT
+        BUSES_CALLS INT
+        SLAVYANKI_CALLS INT
+        TRAIN_CALLS INT
+        FILE_CALLS INT
+        TOTAL_CALLS INT);''')
+        # создание таблицы users_statistics
+        cur.execute('''CREATE TABLE USERS_STATISTICS
+        ID INT PRIMARY KEY NOT NULL
+        START_DATE DATE
+        LASTCALL_DATE DATE
+        TOTAL_CALLS INT);''')
+        cur.commit()
+        con.close()
 
     @staticmethod
     def setup():
@@ -541,11 +531,17 @@ class Setup:
         Setup.creatorBusesCurriculum()
         lastUpdateBuses = datetime.datetime.now() + datetime.timedelta(hours=3)
         Setup.creatorTrainsCurriculum()
-        Setup.createWorkbook()
+
+        try:
+            if bool(int((os.environ('CREATE_DB')))):
+                Setup.createDataBase()
+                print('База данных создана.')
+        except Exception as e:
+            print(e)
+
         end = datetime.datetime.now()
         print('Первый запуск прошел успешно ({}). Бот готов к работе.'.format(end-start))
         lastUpdateTrains = end + datetime.timedelta(hours=3)
-
 
         def updateTrainsCurriculum():
             global lastUpdateTrains
@@ -559,7 +555,6 @@ class Setup:
                     print('Расписание электричек было обновлено за {}'.format(end-start))
                     lastUpdateTrains = end + datetime.timedelta(hours=3)
 
-
         def updateBusesCurriculum():
             global lastUpdateBuses
 
@@ -571,8 +566,6 @@ class Setup:
                     end = datetime.datetime.now()
                     print('Расписание автобусов было обновлено за {}'.format(end - start))
                     lastUpdateBuses = end + datetime.timedelta(hours=3)
-
-
 
         updateTrainsThread = Thread(target=updateTrainsCurriculum, name='updateTrainsCurricullum', daemon=True)
         updateBusesThread = Thread(target=updateBusesCurriculum, name='updateBusesCurriculum', daemon=True)
@@ -591,64 +584,8 @@ class Admin:
         return answer
 
     @staticmethod
-    def userData(userID, func='start'):
-        funcs = {'start': 2,
-                 'buses': 3,
-                 'slavyanki': 4,
-                 'trains': 5,
-                 'file': 6,
-                 'total': 7}
-
-        wb = xl.load_workbook(filename='statistics.xlsx')  # statistics.xlsx
-
-        # работа с full_statistics
-        fullStatisticsSheet = wb['full_statistics']
-        addDate = str(datetime.datetime.today().strftime('%d.%m.%Y'))
-        # добавление новой даты, если еще не было
-        isDateExists = False
-        for i in range(1, fullStatisticsSheet.max_row + 1):
-            if addDate == fullStatisticsSheet.cell(row=i, column=1).value:
-                isDateExists = True
-                currentRow = i
-                break
-        if not isDateExists:
-            currentRow = fullStatisticsSheet.max_row + 1
-            forTotal = '=SUM(C{}:F{})'.format(currentRow, currentRow)
-            totalCell = fullStatisticsSheet.cell(row=currentRow, column=8)
-            totalCell.value = forTotal
-        fullStatisticsSheet.cell(row=currentRow, column=1).value = addDate
-        # регистрация функции
-        currentCell = fullStatisticsSheet.cell(row=currentRow, column=funcs[func])
-        if not currentCell.value:
-            currentCell.value = 0
-        currentCell.value += 1
-
-        #работа с users_statitstics
-        usersStatisticsSheet = wb['users_statistics']
-        # добавление нового юзера, если его еще не было
-        isUserIdExists = False
-        for i in range(1, usersStatisticsSheet.max_row + 1):
-            if userID == usersStatisticsSheet.cell(row=i, column=1).value:
-                isUserIdExists = True
-                currentRow = i
-                break
-        if not isUserIdExists:
-            currentRow = usersStatisticsSheet.max_row + 1
-            forTotal = '=SUM(D{}:G{})'.format(currentRow, currentRow)
-            totalCell = usersStatisticsSheet.cell(row=currentRow, column=8)
-            totalCell.value = forTotal
-        usersStatisticsSheet.cell(row=currentRow, column=1).value = userID
-
-        # регистраиця функций
-        usersStatisticsSheet.cell(row=currentRow, column=3).value = addDate  # last_call_date
-        currentCell = usersStatisticsSheet.cell(row=currentRow, column=funcs[func] + 1)
-        if func == 'start':
-            currentCell.value = addDate
-        else:
-            if not currentCell.value:
-                currentCell.value = 0
-            currentCell.value += 1
-        wb.save('statistics.xlsx')
+    def userData(userID: int, func: str):
+        pass
 
 
 Setup.setup()

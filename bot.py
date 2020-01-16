@@ -13,11 +13,13 @@ bot = telebot.TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, main.Answers.startMessage())
-    main.Admin.userData(message.chat.id)
+    main.Admin.userData(message.chat.id, func='start')
+
 
 @bot.message_handler(commands=['help'])
 def help_message(message):
     bot.send_message(message.chat.id, main.Answers.helpMessage())
+    main.Admin.userData(message.chat.id, func='help')
 
 
 @bot.message_handler(commands=['buses'])
