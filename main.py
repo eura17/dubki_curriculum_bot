@@ -500,7 +500,7 @@ class Setup:
 
     @staticmethod
     def createDataBase():
-        con = sql.connect(os.environ('DATABASE_URL'),
+        con = sql.connect(os.getenv('DATABASE_URL'),
                                  sslmode='require')
         cur = con.cursor()
         # создание таблицы full_statistics
@@ -532,7 +532,7 @@ class Setup:
         Setup.creatorTrainsCurriculum()
 
         try:
-            if bool(int((os.environ('CREATE_DB')))):
+            if bool(int((os.getenv('CREATE_DB')))):
                 Setup.createDataBase()
                 print('База данных создана.')
         except Exception as e:
