@@ -500,7 +500,7 @@ class Setup:
 
     @staticmethod
     def createDataBase():
-        con = sql.connect(os.environ['DATABASE_URI'],
+        con = sql.connect(os.environ('DATABASE_URI'),
                                  sslmode='require')
         cur = con.cursor()
         # создание таблицы full_statistics
