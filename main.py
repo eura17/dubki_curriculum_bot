@@ -164,7 +164,6 @@ class Setup:
         for a in groupPage.find_all('a', href=True):
             if 'Расписание' in str(a):
                 linkToDoc = a['href']
-                print(linkToDoc)
                 download(linkToDoc, filename='Расписание.pdf')
                 break
 
@@ -589,3 +588,13 @@ class Admin:
 
 
 Setup.setup()
+
+try:
+    import psycopg2
+    con = psycopg2.connect('postgres://xoglbezchperoz:a865e0e4b54463c1cff72e04d308acbf2f959f3fe89cb18a76b45f2ac18ea9f0@ec2-54-217-234-157.eu-west-1.compute.amazonaws.com:5432/d2ba7bfo7icl95', 
+                           sslmode='require')
+except Exception as e:
+    print(e)
+else:
+    print('connected')
+    
