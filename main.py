@@ -505,7 +505,7 @@ class Setup:
         cur = con.cursor()
         # создание таблицы full_statistics
         cur.execute('''CREATE TABLE FULL_STATISTICS
-                    (date DATE PRIMARY KEY,
+                    (date TEXT PRIMARY KEY,
                     start_calls INT,
                     help_calls INT,
                     buses_calls INT,
@@ -516,8 +516,8 @@ class Setup:
         # создание таблицы users_statistics
         cur.execute('''CREATE TABLE USERS_STATISTICS
                     (id INT PRIMARY KEY NOT NULL,
-                    start_date DATE,
-                    lastcall_date DATE,
+                    start_date TEXT,
+                    lastcall_date TEXT,
                     total_calls INT);''')
         con.commit()
         con.close()
@@ -534,7 +534,7 @@ class Setup:
         Setup.creatorTrainsCurriculum()
         print('Расписание электричек загружено...')
 
-        if bool(int((os.environ('CREATE_DB')))):
+        if bool(int((os.getenv('CREATE_DB')))):
             Setup.createDataBase()
             print('База данных создана.')
 
