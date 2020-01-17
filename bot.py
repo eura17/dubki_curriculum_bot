@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import telebot
 from telebot.types import KeyboardButton
 import main
@@ -13,19 +14,13 @@ bot = telebot.TeleBot(TOKEN)
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, main.Answers.startMessage())
-    try:
-        main.Admin.userData(message.chat.id, func='start')
-    except Exception as e:
-        print(e)
+    main.Admin.userData(message.chat.id, func='start')
 
 
 @bot.message_handler(commands=['help'])
 def help_message(message):
     bot.send_message(message.chat.id, main.Answers.helpMessage())
-    try:
-        main.Admin.userData(message.chat.id, func='help')
-    except Exception as e:
-        print(e)
+    main.Admin.userData(message.chat.id, func='help')
 
 
 @bot.message_handler(commands=['buses'])
@@ -36,10 +31,7 @@ def buses_message(message):
     bot.send_message(message.chat.id, 'Выбери направление',
                      reply_markup=keyboard1)
     bot.register_next_step_handler(message, buses_message_main)
-    try:
-        main.Admin.userData(message.chat.id, func='buses')
-    except Exception as e:
-        print(e)
+    main.Admin.userData(message.chat.id, func='buses')
 
 
 def buses_message_main(message):
@@ -59,10 +51,7 @@ def slavyanki_message(message):
     keyboard2.row('Дубки ---> Славянский бульвар', 'Славянский бульвар ---> Дубки')
     bot.send_message(message.chat.id, 'Выбери направление', reply_markup=keyboard2)
     bot.register_next_step_handler(message, slavyanki_message_main)
-    try:
-        main.Admin.userData(message.chat.id, func='slavyanki')
-    except Exception as e:
-        print(e)
+    main.Admin.userData(message.chat.id, func='slavyanki')
 
 
 def slavyanki_message_main(message):
@@ -88,10 +77,7 @@ def trains_message(message):
     bot.send_message(message.chat.id, 'Выбери направление',
                      reply_markup=keyboard3)
     bot.register_next_step_handler(message, trains_message_main)
-    try:
-        main.Admin.userData(message.chat.id, func='trains')
-    except Exception as e:
-        print(e)
+    main.Admin.userData(message.chat.id, func='trains')
 
 
 def trains_message_main(message):
@@ -115,10 +101,7 @@ def trains_message_main(message):
 def file_message(message):
     doc = open('Расписание.pdf', 'rb')
     bot.send_document(message.chat.id, doc)
-    try:
-        main.Admin.userData(message.chat.id, func='file')
-    except Exception as e:
-        print(e)
+    main.Admin.userData(message.chat.id, func='file')
 
 
 @bot.message_handler(commands=['check_updates'])
