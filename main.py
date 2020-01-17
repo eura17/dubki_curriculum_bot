@@ -604,6 +604,7 @@ class Admin:
             con.commit()
             cur.execute('SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(today))
             rows = cur.fetchall()
+        print(rows)
         cur.execute('UPDATE FULL_STATISTICS set {}_calls = {} where date LIKE \'{}\';'.format(
             func, int(rows[0][funcs[func]]) + 1, today))
         cur.execute('UPDATE FULL_STATISTICS set total_calls = {} where date LIKE \'{}\';'.format(
@@ -619,6 +620,7 @@ class Admin:
             con.commit()
             cur.execute('SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
             rows = cur.fetchall()
+        print(rows)
         cur.execute('UPDATE USERS_STATISTICS set lastcall_date = {} WHERE id = {};'.format(
             today, userID))
         cur.execute('UPDATE USERS_STATISTICS set total_calls = {} WHERE id = {};'.format(
