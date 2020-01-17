@@ -596,35 +596,45 @@ class Admin:
                  'trains': 4,
                  'file': 5,
                  'total': 6}
-        cur.execute('SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(today))
+        cur.execute(
+            'SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(
+                today))
         rows = cur.fetchall()
         if len(rows) == 0:
-            cur.execute('INSERT INTO FULL_STATISTICS (date, start_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUES (\'{}\', {}, {}, {}, {}, {}, {});'.format(
-                today, 0, 0, 0, 0, 0, 0))
+            cur.execute(
+                'INSERT INTO FULL_STATISTICS (date, start_calls, help_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUES (\'{}\', {}, {}, {}, {}, {}, {});'.format(
+                    today, 0, 0, 0, 0, 0, 0, 0))
             con.commit()
-            cur.execute('SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(today))
+            cur.execute(
+                'SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(
+                    today))
             rows = cur.fetchall()
-        print(rows)
-        cur.execute('UPDATE FULL_STATISTICS set {}_calls = {} where date LIKE \'{}\';'.format(
-            func, int(rows[0][funcs[func]]) + 1, today))
-        cur.execute('UPDATE FULL_STATISTICS set total_calls = {} where date LIKE \'{}\';'.format(
-            rows[0][funcs['total']] + 1, today))
+        cur.execute(
+            'UPDATE FULL_STATISTICS set {}_calls = {} where date LIKE \'{}\';'.format(
+                func, int(rows[0][funcs[func]]) + 1, today))
+        cur.execute(
+            'UPDATE FULL_STATISTICS set total_calls = {} where date LIKE \'{}\';'.format(
+                rows[0][funcs['total']] + 1, today))
         con.commit()
 
         # работа с таблицей users_statistics
-        cur.execute('SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
+        cur.execute(
+            'SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
         rows = cur.fetchall()
         if len(rows) == 0:
-            cur.execute('INSERT INTO USERS_STATISTICS (id, start_date, total_calls) VALUES ({}, {}, {});'.format(
-                userID, today, 0))
+            cur.execute(
+                'INSERT INTO USERS_STATISTICS (id, start_date, total_calls) VALUES ({}, {}, {});'.format(
+                    userID, today, 0))
             con.commit()
-            cur.execute('SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
+            cur.execute(
+                'SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
             rows = cur.fetchall()
-        print(rows)
-        cur.execute('UPDATE USERS_STATISTICS set lastcall_date = {} WHERE id = {};'.format(
-            today, userID))
-        cur.execute('UPDATE USERS_STATISTICS set total_calls = {} WHERE id = {};'.format(
-            int(rows[0][3]) + 1, userID))
+        cur.execute(
+            'UPDATE USERS_STATISTICS set lastcall_date = {} WHERE id = {};'.format(
+                today, userID))
+        cur.execute(
+            'UPDATE USERS_STATISTICS set total_calls = {} WHERE id = {};'.format(
+                int(rows[0][3]) + 1, userID))
         con.commit()
 
         con.close()
