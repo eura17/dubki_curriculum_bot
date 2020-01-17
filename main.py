@@ -677,7 +677,7 @@ class Admin:
                  'D1': 'total_calls'}
         for elem in names:
             usersStatisticsSheet[elem] = names[elem]
-        cur.execute('SELECT * FROM USERS_STATISTICS')
+        cur.execute('SELECT * FROM USERS_STATISTICS;')
         rows = cur.fetchall()
         for i in range(2, len(rows) + 1):
             for j in range(1, len(rows[i])):
