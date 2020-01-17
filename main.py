@@ -683,6 +683,7 @@ class Admin:
             for j in range(1, len(rows[i])):
                 usersStatisticsSheet.cell(row=i, column=j).value = rows[i][j]
 
+        con.close()
         wb.save('statistics.xlsx')
 
 
