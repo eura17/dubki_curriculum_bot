@@ -665,6 +665,7 @@ class Admin:
 
         cur.execute('SELECT * FROM FULL_STATISTICS;')
         rows = cur.fetchall()
+        print(rows)
         for i in range(2, len(rows) + 1):
             for j in range(1, len(rows[i])):
                 fullStatisticsSheet.cell(row=i, column=j).value = rows[i][j]
@@ -679,6 +680,7 @@ class Admin:
             usersStatisticsSheet[elem] = names[elem]
         cur.execute('SELECT * FROM USERS_STATISTICS;')
         rows = cur.fetchall()
+        print(rows)
         for i in range(2, len(rows) + 1):
             for j in range(1, len(rows[i])):
                 usersStatisticsSheet.cell(row=i, column=j).value = rows[i][j]
