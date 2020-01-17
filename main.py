@@ -602,7 +602,7 @@ class Admin:
         rows = cur.fetchall()
         if len(rows) == 0:
             cur.execute(
-                'INSERT INTO FULL_STATISTICS (date, start_calls, help_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUES (\'{}\', {}, {}, {}, {}, {}, {});'.format(
+                'INSERT INTO FULL_STATISTICS (date, start_calls, help_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUES (\'{}\', {}, {}, {}, {}, {}, {}, {});'.format(
                     today, 0, 0, 0, 0, 0, 0, 0))
             con.commit()
             cur.execute(
@@ -623,14 +623,14 @@ class Admin:
         rows = cur.fetchall()
         if len(rows) == 0:
             cur.execute(
-                'INSERT INTO USERS_STATISTICS (id, start_date, total_calls) VALUES ({}, {}, {});'.format(
+                'INSERT INTO USERS_STATISTICS (id, start_date, total_calls) VALUES ({}, \'{}\', {});'.format(
                     userID, today, 0))
             con.commit()
             cur.execute(
                 'SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
             rows = cur.fetchall()
         cur.execute(
-            'UPDATE USERS_STATISTICS set lastcall_date = {} WHERE id = {};'.format(
+            'UPDATE USERS_STATISTICS set lastcall_date = \'{}\' WHERE id = {};'.format(
                 today, userID))
         cur.execute(
             'UPDATE USERS_STATISTICS set total_calls = {} WHERE id = {};'.format(
