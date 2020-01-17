@@ -519,7 +519,7 @@ class Setup:
         START_DATE DATE,
         LASTCALL_DATE DATE,
         TOTAL_CALLS INT);''')
-        cur.commit()
+        con.commit()
         con.close()
 
     @staticmethod
