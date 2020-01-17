@@ -505,7 +505,7 @@ class Setup:
         cur = con.cursor()
         # создание таблицы full_statistics
         cur.execute('''CREATE TABLE FULL_STATISTICS
-                    (date DATE PRIMARY KEY,
+                    (date TEXT PRIMARY KEY,
                     start_calls INT,
                     help_calls INT,
                     buses_calls INT,
@@ -516,8 +516,8 @@ class Setup:
         # создание таблицы users_statistics
         cur.execute('''CREATE TABLE USERS_STATISTICS
                     (id INT PRIMARY KEY NOT NULL,
-                    start_date DATE,
-                    lastcall_date DATE,
+                    start_date TEXT,
+                    lastcall_date TEXT,
                     total_calls INT);''')
         con.commit()
         con.close()
@@ -596,15 +596,15 @@ class Admin:
                  'trains': 4,
                  'file': 5,
                  'total': 6}
-        cur.execute('SELECT * from FULL_STATISTICS WHERE date = {};'.format(today))
+        cur.execute('SELECT * from FULL_STATISTICS WHERE date LIKE {};'.format(today))
         rows = cur.fetchall()
         if len(rows) == 0:
             cur.execute('INSERT INTO FULL_STATISTICS (date, start_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUE ({}, {}, {}, {}, {}, {}, {});'.format(
                 today, 0, 0, 0, 0, 0, 0))
             con.commit()
-        cur.execute('UPDATE FULL_STATISTICS set {}_calls = {} where date = {};'.format(
+        cur.execute('UPDATE FULL_STATISTICS set {}_calls = {} where date LIKE {};'.format(
             func, int(rows[0][funcs[func]]) + 1, today))
-        cur.execute('UPDATE FULL_STATISTICS set total_calls = {} where date = {};'.format(
+        cur.execute('UPDATE FULL_STATISTICS set total_calls = {} where date LIKE {};'.format(
             rows[0][funcs['total']] + 1, today))
         con.commit()
 
