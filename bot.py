@@ -113,11 +113,14 @@ def check_updates(message):
 
 @bot.message_handler(commands=['get_statistics'])
 def get_statistics(message):
-    doc = open('statistics.xlsx', 'rb')
-    if message.from_user.id == myID:
-        bot.send_document(message.chat.id, doc)
+    if main.Admin.createStatisticsXcl():
+        doc = open('statistics.xlsx', 'rb')
+        if message.from_user.id == myID:
+            bot.send_document(message.chat.id, doc)
+        else:
+            bot.send_message(message.chat.id, 'Недостаточно прав для вызова этой команды.')
     else:
-        bot.send_message(message.chat.id, 'Недостаточно прав для вызова этой команды.')
+        bot.send_message(message.chat.id, 'Произошла ошибка.')
 
 
 @bot.message_handler(content_types=['text', 'audio', 'sticker', 'video', 'document'])

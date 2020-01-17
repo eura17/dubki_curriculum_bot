@@ -573,8 +573,8 @@ class Setup:
 
 
 class Admin:
-    def __init__(self):
-        pass
+    def __init__(self, myID=281452837):
+        self.id = myID
 
     @staticmethod
     def checkUpdates():
@@ -584,7 +584,7 @@ class Admin:
 
     @staticmethod
     def userData(userID: int, func: str):
-        today = datetime.datetime.now().date()
+        today = str(datetime.datetime.today().strftime('%d.%m.%Y'))
         con = sql.connect(os.getenv('DATABASE_URL'),
                           sslmode='require')
         cur = con.cursor()
@@ -596,31 +596,94 @@ class Admin:
                  'trains': 4,
                  'file': 5,
                  'total': 6}
-        cur.execute('SELECT * from FULL_STATISTICS WHERE date = {};'.format(today))
+        cur.execute(
+            'SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(
+                today))
         rows = cur.fetchall()
         if len(rows) == 0:
-            cur.execute('INSERT INTO FULL_STATISTICS (date, start_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUE ({}, {}, {}, {}, {}, {}, {});'.format(
-                today, 0, 0, 0, 0, 0, 0))
+            cur.execute(
+                'INSERT INTO FULL_STATISTICS (date, start_calls, help_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUES (\'{}\', {}, {}, {}, {}, {}, {}, {});'.format(
+                    today, 0, 0, 0, 0, 0, 0, 0))
             con.commit()
-        cur.execute('UPDATE FULL_STATISTICS set {}_calls = {} where date = {};'.format(
-            func, int(rows[0][funcs[func]]) + 1, today))
-        cur.execute('UPDATE FULL_STATISTICS set total_calls = {} where date = {};'.format(
-            rows[0][funcs['total']] + 1, today))
+            cur.execute(
+                'SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(
+                    today))
+            rows = cur.fetchall()
+        cur.execute(
+            'UPDATE FULL_STATISTICS set {}_calls = {} where date LIKE \'{}\';'.format(
+                func, int(rows[0][funcs[func]]) + 1, today))
+        cur.execute(
+            'UPDATE FULL_STATISTICS set total_calls = {} where date LIKE \'{}\';'.format(
+                rows[0][funcs['total']] + 1, today))
         con.commit()
 
         # работа с таблицей users_statistics
-        cur.execute('SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
+        cur.execute(
+            'SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
         rows = cur.fetchall()
         if len(rows) == 0:
-            cur.execute('INSERT INTO USERS_STATISTICS (id, start_date, total_calls) VALUE ({}, {}, {});'.format(
-                userID, today, 0))
-        cur.execute('UPDATE USERS_STATISTICS set lastcall_date = {} WHERE id = {};'.format(
-            today, userID))
-        cur.execute('UPDATE USERS_STATISTICS set total_calls = {} WHERE id = {};'.format(
-            int(rows[0][3]) + 1, userID))
+            cur.execute(
+                'INSERT INTO USERS_STATISTICS (id, start_date, total_calls) VALUES ({}, \'{}\', {});'.format(
+                    userID, today, 0))
+            con.commit()
+            cur.execute(
+                'SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
+            rows = cur.fetchall()
+        cur.execute(
+            'UPDATE USERS_STATISTICS set lastcall_date = \'{}\' WHERE id = {};'.format(
+                today, userID))
+        cur.execute(
+            'UPDATE USERS_STATISTICS set total_calls = {} WHERE id = {};'.format(
+                int(rows[0][3]) + 1, userID))
         con.commit()
 
         con.close()
+
+    @staticmethod
+    def createStatisticsXcl():
+        if 'statistics.xlsx' in os.listdir(os.getcwd()):
+            os.remove(os.getcwd() + 'statistics.xlsx')
+        wb = xl.workbook.Workbook()
+        wb.active.title = 'full_statistics'
+        wb.create_sheet('users_statistics', 1)
+        con = sql.connect(os.getenv('DATABASE_URL'),
+                          sslmode='require')
+        cur = con.cursor()
+
+        # работа с full_statistics
+        fullStatisticsSheet = wb['full_statistics']
+        names = {'A1': 'date',
+                 'B1': 'start_calls',
+                 'C1': 'help_calls',
+                 'D1': 'buses_calls',
+                 'E1': 'slavyanki_calls',
+                 'F1': 'trains_calls',
+                 'G1': 'file_calls',
+                 'H1': 'total_calls'}
+        for elem in names:
+            fullStatisticsSheet[elem] = names[elem]
+
+        cur.execute('SELECT * FROM FULL_STATISTICS;')
+        rows = cur.fetchall()
+        for i in range(2, len(rows) + 1):
+            for j in range(1, len(rows[i])):
+                fullStatisticsSheet.cell(row=i, column=j).value = rows[i][j]
+
+        # работа с users_statistics
+        usersStatisticsSheet = wb['users_statistics']
+        names = {'A1': 'id',
+                 'B1': 'start_date',
+                 'C1': 'lastcall_date',
+                 'D1': 'total_calls'}
+        for elem in names:
+            usersStatisticsSheet[elem] = names[elem]
+        cur.execute('SELECT * FROM USERS_STATISTICS')
+        rows = cur.fetchall()
+        for i in range(2, len(rows) + 1):
+            for j in range(1, len(rows[i])):
+                usersStatisticsSheet.cell(row=i, column=j).value = rows[i][j]
+
+        wb.save('statistics.xlsx')
 
 
 Setup.setup()
