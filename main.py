@@ -534,7 +534,7 @@ class Setup:
         Setup.creatorTrainsCurriculum()
         print('Расписание электричек загружено...')
 
-        if bool(int((os.environ('CREATE_DB')))):
+        if bool(int((os.getenv('CREATE_DB')))):
             Setup.createDataBase()
             print('База данных создана.')
 
