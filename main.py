@@ -536,7 +536,7 @@ class Setup:
 
         if bool(int((os.getenv('CREATE_DB')))):
             Setup.createDataBase()
-            print('База данных создана.')
+            print('База данных подключена...')
 
         end = datetime.datetime.now()
         print('Настройка прошла успешно ({}). Бот готов к работе.'.format(end-start))
