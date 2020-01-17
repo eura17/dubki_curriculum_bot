@@ -599,7 +599,7 @@ class Admin:
         cur.execute('SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(today))
         rows = cur.fetchall()
         if len(rows) == 0:
-            cur.execute('INSERT INTO FULL_STATISTICS (date, start_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUE ('{}', {}, {}, {}, {}, {}, {});'.format(
+            cur.execute('INSERT INTO FULL_STATISTICS (date, start_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUE (\'{}\', {}, {}, {}, {}, {}, {});'.format(
                 today, 0, 0, 0, 0, 0, 0))
             con.commit()
         cur.execute('UPDATE FULL_STATISTICS set {}_calls = {} where date LIKE \'{}\';'.format(
