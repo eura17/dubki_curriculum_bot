@@ -591,7 +591,7 @@ class Admin:
 
         # работа с таблицей full_statistics
         funcs = {'start': 1,
-                 'help': 2
+                 'help': 2,
                  'buses': 3,
                  'slavyanki': 4,
                  'trains': 5,
