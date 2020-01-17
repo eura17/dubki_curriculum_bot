@@ -641,8 +641,6 @@ class Admin:
 
     @staticmethod
     def createStatisticsXcl():
-        if 'statistics.xlsx' in os.listdir(os.getcwd()):
-            os.remove(os.getcwd() + '\statistics.xlsx')
         wb = xl.workbook.Workbook()
         wb.active.title = 'full_statistics'
         wb.create_sheet('users_statistics', 1)
