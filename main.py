@@ -500,26 +500,26 @@ class Setup:
 
     @staticmethod
     def createDataBase():
-        con = sql.connect(os.environ['DATABASE_URI'],
-                                 sslmode='require')
+        con = sql.connect(os.getenv('DATABASE_URL'),
+                          sslmode='require')
         cur = con.cursor()
         # создание таблицы full_statistics
         cur.execute('''CREATE TABLE FULL_STATISTICS
-        DATE DATE PRIMARY KEY
-        START_CALLS INT
-        HELP_CALLS INT
-        BUSES_CALLS INT
-        SLAVYANKI_CALLS INT
-        TRAIN_CALLS INT
-        FILE_CALLS INT
-        TOTAL_CALLS INT);''')
+                    (date DATE PRIMARY KEY,
+                    start_calls INT,
+                    help_calls INT,
+                    buses_calls INT,
+                    slavyanki_calls INT,
+                    trains_calls INT,
+                    file_calls INT,
+                    total_calls INT);''')
         # создание таблицы users_statistics
         cur.execute('''CREATE TABLE USERS_STATISTICS
-        ID INT PRIMARY KEY NOT NULL
-        START_DATE DATE
-        LASTCALL_DATE DATE
-        TOTAL_CALLS INT);''')
-        cur.commit()
+                    (id INT PRIMARY KEY NOT NULL,
+                    start_date DATE,
+                    lastcall_date DATE,
+                    total_calls INT);''')
+        con.commit()
         con.close()
 
     @staticmethod
@@ -527,19 +527,19 @@ class Setup:
         global lastUpdateTrains, lastUpdateBuses
 
         start = datetime.datetime.now()
+        print('Первоначальная настройка началась...')
         Setup.creatorBusesCurriculum()
+        print('Расписание автобусов загружено...')
         lastUpdateBuses = datetime.datetime.now() + datetime.timedelta(hours=3)
         Setup.creatorTrainsCurriculum()
+        print('Расписание электричек загружено...')
 
-        try:
-            if bool(int((os.environ('CREATE_DB')))):
-                Setup.createDataBase()
-                print('База данных создана.')
-        except Exception as e:
-            print(e)
+        if bool(int((os.environ('CREATE_DB')))):
+            Setup.createDataBase()
+            print('База данных создана.')
 
         end = datetime.datetime.now()
-        print('Первый запуск прошел успешно ({}). Бот готов к работе.'.format(end-start))
+        print('Настройка прошла успешно ({}). Бот готов к работе.'.format(end-start))
         lastUpdateTrains = end + datetime.timedelta(hours=3)
 
         def updateTrainsCurriculum():
@@ -584,17 +584,43 @@ class Admin:
 
     @staticmethod
     def userData(userID: int, func: str):
-        pass
+        today = datetime.datetime.now().date()
+        con = sql.connect(os.getenv('DATABASE_URL'),
+                          sslmode='require')
+        cur = con.cursor()
+
+        # работа с таблицей full_statistics
+        funcs = {'start': 1,
+                 'buses': 2,
+                 'slavyanki': 3,
+                 'trains': 4,
+                 'file': 5,
+                 'total': 6}
+        cur.execute('SELECT * from FULL_STATISTICS WHERE date = {};'.format(today))
+        rows = cur.fetchall()
+        if len(rows) == 0:
+            cur.execute('INSERT INTO FULL_STATISTICS (date, start_calls, buses_calls, slavyanki_calls, trains_calls, file_calls, total_calls) VALUE ({}, {}, {}, {}, {}, {}, {});'.format(
+                today, 0, 0, 0, 0, 0, 0))
+            con.commit()
+        cur.execute('UPDATE FULL_STATISTICS set {}_calls = {} where date = {};'.format(
+            func, int(rows[0][funcs[func]]) + 1, today))
+        cur.execute('UPDATE FULL_STATISTICS set total_calls = {} where date = {};'.format(
+            rows[0][funcs['total']] + 1, today))
+        con.commit()
+
+        # работа с таблицей users_statistics
+        cur.execute('SELECT * from USERS_STATISTICS WHERE id = {}'.format(userID))
+        rows = cur.fetchall()
+        if len(rows) == 0:
+            cur.execute('INSERT INTO USERS_STATISTICS (id, start_date, total_calls) VALUE ({}, {}, {});'.format(
+                userID, today, 0))
+        cur.execute('UPDATE USERS_STATISTICS set lastcall_date = {} WHERE id = {};'.format(
+            today, userID))
+        cur.execute('UPDATE USERS_STATISTICS set total_calls = {} WHERE id = {};'.format(
+            int(rows[0][3]) + 1, userID))
+        con.commit()
+
+        con.close()
 
 
 Setup.setup()
-
-try:
-    import psycopg2
-    con = psycopg2.connect('postgres://xoglbezchperoz:a865e0e4b54463c1cff72e04d308acbf2f959f3fe89cb18a76b45f2ac18ea9f0@ec2-54-217-234-157.eu-west-1.compute.amazonaws.com:5432/d2ba7bfo7icl95', 
-                           sslmode='require')
-except Exception as e:
-    print(e)
-else:
-    print('connected')
-    
