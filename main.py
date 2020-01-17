@@ -591,11 +591,12 @@ class Admin:
 
         # работа с таблицей full_statistics
         funcs = {'start': 1,
-                 'buses': 2,
-                 'slavyanki': 3,
-                 'trains': 4,
-                 'file': 5,
-                 'total': 6}
+                 'help': 2
+                 'buses': 3,
+                 'slavyanki': 4,
+                 'trains': 5,
+                 'file': 6,
+                 'total': 7}
         cur.execute(
             'SELECT * from FULL_STATISTICS WHERE date LIKE \'{}\';'.format(
                 today))
