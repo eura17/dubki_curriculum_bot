@@ -373,7 +373,7 @@ class Setup:
                      'Одинцово-Белорусский вокзал': [], 'Белорусский вокзал-Одинцово': []}
 
         for day in range(2):
-            if nowHours + 3 < 24 and day == 1:
+            if nowHours + 1 < 24 and day == 1:
                 break
             if day == 1:
                 try:
