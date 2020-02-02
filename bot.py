@@ -99,7 +99,7 @@ def trains_message_main(message):
                       'Беговая ---> Одинцово': 'Беговая-Одинцово',
                       'Белорусский вокзал ---> Одинцово': 'Белорусский вокзал-Одинцово'}
     bot.send_message(message.chat.id,
-                     answers.trainsMessage(commandsTrains[message.text]),
+                     answers.trainsAnswer(commandsTrains[message.text]),
                      parse_mode='Markdown')
 
 
