@@ -733,7 +733,7 @@ P.S. По всем вопросам и предложениям писать @eu
                                   'Беговая-Одинцово': 'от Беговой до Одинцово',
                                   'Фили-Одинцово': 'от Филей до Одинцово',
                                   'Кунцево-Одинцово': 'от Кунцево до Одинцово'}
-            answer = 'Электрички {}:'.format(grammarForStations[direction])
+            answer = 'Электрички {}:\n'.format(grammarForStations[direction])
             for train in trains:
                 answer += '\n{}\n'.format(train)
             answer += '\nБлижайшие автобусы /buses'
