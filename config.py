@@ -96,9 +96,11 @@ class Bus:
         toPrint = toPrint if not self.isSlavyanka \
             else toPrint + ' (*славянка*)'
         toPrint += delta
-        for train in self.trains:
-            if train.mainTime >= today():
-                toPrint += '\n' + train.trainToPrint(forWhat='buses')
+        if len(self.trains) > 0:
+            toPrint += '\nудобные пересадки:'
+            for train in self.trains:
+                if train.mainTime >= today():
+                    toPrint += '\n' + train.trainToPrint(forWhat='buses')
         return toPrint
 
 
@@ -658,7 +660,6 @@ class Config:
         updateCurriculumThread.start()
         print('Поток обновления расписания запущен...')
 
-'''
         if bool(int((os.getenv('CREATE_DB')))):
             self.createDataBase()
             print('База данных создана...')
@@ -673,17 +674,6 @@ class Config:
                 print(e)
 
         print('Первая настройка прошла успешно. Бот готов к работе.')
-'''
-
-
-def aswerBuses(relevantBuses):
-    if len(relevantBuses) == 0:
-        answer = 'Автобусов в ближайший час нет :('
-    else:
-        answer = 'Ближайшие автобусы от Дубков до Одинцово:\n\n' if direction == 'Дубки-Одинцово' \
-            else 'Ближайшие автобусы от Одинцово до Дубков:\n\n'
-        for bus in relevantBuses:
-            answer += bus + '\n\n'
 
 
 class Answers:
@@ -861,3 +851,4 @@ class Admin:
             for j in range(len(rows[i])):
                 usersStatisticsSheet.cell(row=i+2, column=j+1).value = rows[i][j]
         wb.save('statistics.xlsx')
+

@@ -9,9 +9,7 @@ TOKEN = os.getenv('TOKEN')
 myID = 281452837
 bot = telebot.TeleBot(TOKEN)
 answers = Answers()
-answers.config.firstSetup()
 admin = Admin()
-
 
 
 def exceptionHandlerForAnswers(func):
