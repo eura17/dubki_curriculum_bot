@@ -72,6 +72,7 @@ def slavyanki_message_main(message):
                      parse_mode='Markdown')
 
 
+@exceptionHandlerForAnswers
 @bot.message_handler(commands=['trains'])
 def trains_message(message):
     keyboard3 = telebot.types.ReplyKeyboardMarkup(True, True)
@@ -98,7 +99,7 @@ def trains_message_main(message):
                       'Беговая ---> Одинцово': 'Беговая-Одинцово',
                       'Белорусский вокзал ---> Одинцово': 'Белорусский вокзал-Одинцово'}
     bot.send_message(message.chat.id,
-                     main.Answers.trainsMessage(commandsTrains[message.text]),
+                     answers.trainsMessage(commandsTrains[message.text]),
                      parse_mode='Markdown')
 
 

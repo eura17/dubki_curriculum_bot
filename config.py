@@ -391,15 +391,13 @@ class Train:
                 return False
 
     def trainToPrint(self, forWhat: str = 'buses', station: str = None):
-        toPrint = '🚆 *{}* ({})'.format(self.suburbanName,
-                                        self.suburbanType)
-        hour = self.mainTime.hour if len(str(self.mainTime.hour)) == 2 \
-            else '0' + str(self.mainTime.hour)
-        minute = self.mainTime.minute if len(str(self.mainTime.minute)) == 2 \
-            else '0' + str(self.mainTime.minute)
         if forWhat == 'buses':
-            toPrint += ' – отправление в *{}:{}*: '.format(hour, minute) if self.direction == 'Одинцово-Москва' \
-                else ' – прибытие в *{}:{}*: '.format(hour, minute)
+            hour = self.mainTime.hour if len(str(self.mainTime.hour)) == 2 \
+                else '0' + str(self.mainTime.hour)
+            minute = self.mainTime.minute if len(str(self.mainTime.minute)) == 2 \
+                else '0' + str(self.mainTime.minute)
+            toPrint = '🚆 *{}:{} – {}:\n*'.format(hour, minute,
+                                             self.suburbanName)
             stations = ('Кунцево', 'Фили', 'Беговая', 'Белорусский вокзал') if self.direction == 'Одинцово-Москва' \
                 else ('Белорусский вокзал', 'Беговая', 'Фили', 'Кунцево')
             for station in stations:
@@ -409,10 +407,12 @@ class Train:
                     minute = self.stops[station].minute if len(str(self.stops[station].minute)) == 2 \
                         else '0' + str(self.stops[station].minute)
                     toPrint += '*{}* – {}:{}, '.format(station,
-                                                     hour,
-                                                     minute)
+                                                       hour,
+                                                       minute)
             toPrint = toPrint[:-2]
         elif forWhat == 'trains':
+            toPrint = '🚆 *{}* ({})'.format(self.suburbanName,
+                                            self.suburbanType)
             toPrint += ':\nотправление в *{}:{}*, прибытие в *{}:{}*'
             departureHour = self.mainTime.hour if len(str(self.mainTime.hour)) == 2 \
                 else '0' + str(self.mainTime.hour)
@@ -851,4 +851,3 @@ class Admin:
             for j in range(len(rows[i])):
                 usersStatisticsSheet.cell(row=i+2, column=j+1).value = rows[i][j]
         wb.save('statistics.xlsx')
-
