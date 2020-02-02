@@ -443,7 +443,7 @@ class TrainsCurriculum:
                     'Фили': 's9600821',
                     'Беговая': 's9601666',
                     'Белорусский вокзал': 's2000006'}
-        apikey = '7cf62f2f-49ce-4194-afae-fe86b8001542'  # os.getenv('APIKEY_YANDEX')
+        apikey = os.getenv('APIKEY_YANDEX')
         url = 'https://api.rasp.yandex.net/v3.0/search/?apikey={}&from={}&to={}&date={}'
         default = '&format=json&limit=1000&lang=ru_RU&system=yandex&show_systems=yandex'
         now = today()
@@ -551,7 +551,7 @@ class TrainsCurriculum:
                 trainTime = train.mainTime if direction == 'Одинцово-Москва' else train.stops[station]
                 if start < trainTime < end or \
                         start + dt.timedelta(days=1) < trainTime < end + dt.timedelta(days=1) \
-                        and start.hour in (0, 1, 2):
+                        and start.hour in (23, 0, 1, 2):
                     relevantTrains.append(train.trainToPrint(forWhat='trains',
                                                              station=station))
         return relevantTrains
