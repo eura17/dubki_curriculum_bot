@@ -406,7 +406,7 @@ class Train:
                         else '0' + str(self.stops[station].hour)
                     minute = self.stops[station].minute if len(str(self.stops[station].minute)) == 2 \
                         else '0' + str(self.stops[station].minute)
-                    toPrint += '{} – {}:{}, '.format(station,
+                    toPrint += '*{}* – {}:{}, '.format(station,
                                                      hour,
                                                      minute)
             toPrint = toPrint[:-2]
