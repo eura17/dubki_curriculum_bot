@@ -812,8 +812,6 @@ class Admin:
         сохраняет ее в файл statistics.xlsx для того, чтобы бот мог ответить
         на специальную команду, доступную только админу, /get_statistics
         """
-        if 'statistics.xlsx' in os.listdir(os.getcwd()):
-            os.remove(os.getcwd() + 'statistics.xlsx')
         wb = xl.workbook.Workbook()
         wb.active.title = 'full_statistics'
         wb.create_sheet('users_statistics', 1)
@@ -836,7 +834,7 @@ class Admin:
         rows = cur.fetchall()
         for i in range(len(rows)):
             for j in range(len(rows[i])):
-                fullStatisticsSheet.cell(row=i+2, column=j+1).value = rows[i][j]
+                fullStatisticsSheet.cell(row=i + 2, column=j + 1).value = rows[i][j]
         # работа с users_statistics
         usersStatisticsSheet = wb['users_statistics']
         names = {'A1': 'id',
@@ -847,7 +845,8 @@ class Admin:
             usersStatisticsSheet[elem] = names[elem]
         cur.execute('SELECT * FROM USERS_STATISTICS;')
         rows = cur.fetchall()
-        for i in range(2, len(rows) + 1):
+        for i in range(len(rows)):
             for j in range(len(rows[i])):
-                usersStatisticsSheet.cell(row=i+2, column=j+1).value = rows[i][j]
+                usersStatisticsSheet.cell(row=i + 2, column=j + 1).value = rows[i][j]
+        con.close()
         wb.save('statistics.xlsx')
