@@ -551,7 +551,7 @@ class TrainsCurriculum:
                 trainTime = train.mainTime if direction == 'Одинцово-Москва' else train.stops[station]
                 if start < trainTime < end or \
                         start + dt.timedelta(days=1) < trainTime < end + dt.timedelta(days=1) \
-                        and start.hour in (23, 0, 1, 2):
+                        and start.hour in (0, 1, 2):
                     relevantTrains.append(train.trainToPrint(forWhat='trains',
                                                              station=station))
         return relevantTrains
