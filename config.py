@@ -103,7 +103,7 @@ class Bus:
                 if train.mainTime >= today():
                     isAnyRelevantTrain = True
                     toPrintSub += '\n' + train.trainToPrint(forWhat='buses')
-            if isAnyrelevantTrain:
+            if isAnyRelevantTrain:
                 toPrint += toPrintSub
         return toPrint
 
