@@ -97,10 +97,14 @@ class Bus:
             else toPrint + ' (*славянка*)'
         toPrint += delta
         if len(self.trains) > 0:
-            toPrint += '\nудобные пересадки:'
+            toPrintSub += '\nудобные пересадки:'
+            isAnyRelevantTrain = False
             for train in self.trains:
                 if train.mainTime >= today():
-                    toPrint += '\n' + train.trainToPrint(forWhat='buses')
+                    isAnyRelevantTrain = True
+                    toPrintSub += '\n' + train.trainToPrint(forWhat='buses')
+                if isAnyrelevantTrain:
+                    toPrint += toPrintSub
         return toPrint
 
 
