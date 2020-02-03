@@ -49,9 +49,12 @@ def buses_message(message):
 def buses_message_main(message):
     commandsBuses = {'Дубки ---> Одинцово': 'Дубки-Одинцово',
                      'Одинцово ---> Дубки': 'Одинцово-Дубки'}
-    bot.send_message(message.chat.id,
-                     answers.busesAnswer(direction=commandsBuses[message.text]),
-                     parse_mode='Markdown')
+    try:
+        bot.send_message(message.chat.id,
+                        answers.busesAnswer(direction=commandsBuses[message.text]),
+                        parse_mode='Markdown')
+    except Exception:
+        bot.send_message(message.chat.id, 'Произошла какая-то ошибка /help')
 
 
 @exceptionHandlerForAnswers
@@ -67,9 +70,12 @@ def slavyanki_message(message):
 def slavyanki_message_main(message):
     commands = {'Дубки ---> Славянский бульвар': 'Дубки-Одинцово',
                 'Славянский бульвар ---> Дубки': 'Одинцово-Дубки'}
-    bot.send_message(message.chat.id,
-                     answers.slavyankiAnswer(commands[message.text]),
-                     parse_mode='Markdown')
+    try:
+        bot.send_message(message.chat.id,
+                        answers.slavyankiAnswer(commands[message.text]),
+                        parse_mode='Markdown')
+    except Exception:
+        bot.send_message(message.chat.id, 'Произошла какая-то ошибка /help')
 
 
 @exceptionHandlerForAnswers
@@ -98,9 +104,12 @@ def trains_message_main(message):
                       'Фили ---> Одинцово': 'Фили-Одинцово',
                       'Беговая ---> Одинцово': 'Беговая-Одинцово',
                       'Белорусский вокзал ---> Одинцово': 'Белорусский вокзал-Одинцово'}
-    bot.send_message(message.chat.id,
-                     answers.trainsAnswer(commandsTrains[message.text]),
-                     parse_mode='Markdown')
+    try:
+        bot.send_message(message.chat.id,
+                         answers.trainsAnswer(commandsTrains[message.text]),
+                         parse_mode='Markdown')
+    except Exception:
+        bot.send_message(message.chat.id, 'Произошла какая-то ошибка /help')
 
 
 @exceptionHandlerForAnswers
