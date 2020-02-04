@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import fitz
 import os
 import re
+import fitz as pdf
 import pandas as pd
 import openpyxl as xl
 import psycopg2 as sql
@@ -12,7 +12,6 @@ from requests import get
 from threading import Thread, Lock
 from bs4 import BeautifulSoup
 from time import sleep
-from shutil import rmtree as delete
 
 
 def today():
@@ -45,12 +44,10 @@ class Bus:
         self.trains = []
 
     def __str__(self):
-        toPrint = 'по расписанию {}:{}' if self.isAccurate \
-            else 'по прибытии ~ {}:{}'
-        hour, minute = self.timeOfDeparture.hour, self.timeOfDeparture.minute
-        hour = str(hour) if len(str(hour)) == 2 else '0' + str(hour)
-        minute = str(minute) if len(str(minute)) == 2 else '0' + str(minute)
-        toPrint = toPrint.format(hour, minute)
+        toPrint = 'по расписанию {}' if self.isAccurate \
+            else 'по прибытии ~ {}'
+        departureTime = self.timeOfDeparture.strftime('%H:%M')
+        toPrint = toPrint.format(departureTime)
         toPrint = toPrint if not self.isSlavyanka \
                           else toPrint + ' (славянка)'
         return toPrint
@@ -85,22 +82,24 @@ class Bus:
                 return False
 
     def busToPrint(self, forWhat: str = 'buses', delta=None):
-        toPrint = '🚌 *{}:{}*' if self.isAccurate \
-            else '🚌 по прибытии ~ *{}:{}*'
-        hour, minute = self.timeOfDeparture.hour, self.timeOfDeparture.minute
-        hour = str(hour) if len(str(hour)) == 2 else '0' + str(hour)
-        minute = str(minute) if len(str(minute)) == 2 else '0' + str(minute)
-        toPrint = toPrint.format(hour, minute)
+        toPrint = '🚌 *{}*' if self.isAccurate \
+            else '🚌 по прибытии ~ *{}*'
+        departureTime = self.timeOfDeparture.strftime('%H:%M')
+        toPrint = toPrint.format(departureTime)
         if forWhat == 'slavyanki':
             return toPrint
         toPrint = toPrint if not self.isSlavyanka \
             else toPrint + ' (*славянка*)'
         toPrint += delta
         if len(self.trains) > 0:
-            toPrint += '\nудобные пересадки:'
+            toPrintSub = '\nудобные пересадки:'
+            isAnyRelevantTrain = False
             for train in self.trains:
                 if train.mainTime >= today():
-                    toPrint += '\n' + train.trainToPrint(forWhat='buses')
+                    isAnyRelevantTrain = True
+                    toPrintSub += '\n' + train.trainToPrint(forWhat='buses')
+            if isAnyRelevantTrain:
+                toPrint += toPrintSub
         return toPrint
 
 
@@ -111,131 +110,85 @@ class BusesCurriculum:
         self.sunCurriculum = None
         self.linkToPDF = None
 
-    def getPdf(self):
+    @staticmethod
+    def getPdf():
         """ Находит pdf-файл с текущим расписанием из кнопки 'Расписание' в
             группе Дубков ('https://vk.com/dubki') и сохраняет его в файл
             Расписание.pdf
         """
         groupPage = BeautifulSoup(openurl('https://vk.com/dubki'),
                                   features='html.parser')
+        filename = 'Расписание.pdf'
         for a in groupPage.find_all('a', href=True):
             if 'Расписание' in str(a):
                 linkToPDF = a['href']
-                download(linkToPDF, filename='Расписание.pdf')
+                download(linkToPDF, filename=filename)
                 break
-        self.linkToPDF = linkToPDF
-        self.pdfToTxt()
+        return filename
 
-    @staticmethod
-    def pdfToTxt():
-        """ Достает текст из pdf-файла с расписанием (Расписание.pdf),
-            сохраняет первую страницу (расписание на неделю)
-            в txt-файл mon-fri.txt, вторую страницу (расписание на субботу и
-            воскресенье) в txt-файл sat-sun.txt (файлы хранятся в папке txt/)
-        """
-        os.mkdir(os.getcwd() + '/txt')
-        pdfDocument = 'Расписание.pdf'
-        doc = fitz.open(pdfDocument)
-        for i in range(2):
-            page = doc.loadPage(i)
-            text = page.getText('text')
-            pathToSave = 'txt/mon-fri.txt' if i == 0 else 'txt/sat-sun.txt'
-            with open(pathToSave, 'w', encoding='utf8') as f:
-                print(text, file=f)
-
-    def createCurriculum(self):
+    def createCurriculum(self, filename: str):
         """ Парсит txt-файлы mon-fri.txt и sat-sun.txt (из папки txt/)
             и сохраняет расписание в списки с "сырым" расписанием, которые
             впоследствии преобразуются в датафреймы pandas с расписание
             на будние дни, субботу и воскресенье
         """
-        DtoO = True
-        DtoOweekTimes, OtoDweekTimes = [], []
-        DtoOsatTimes, OtoDsatTimes = [], []
-        DtoOsunTimes, OtoDsunTimes = [], []
-        toPutDtoO = {'week': DtoOweekTimes,
-                     'sat': DtoOsatTimes,
-                     'sun': DtoOsunTimes}
-        toPutOtoD = {'week': OtoDweekTimes,
-                     'sat': OtoDsatTimes,
-                     'sun': OtoDsunTimes}
-        weekday = ['week', 'sat', 'sun']
-        indexOfWeekday = 0
-
-        for file in 'mon-fri.txt', 'sat-sun.txt':
-            if file == 'sat-sun.txt':
-                indexOfWeekday += 1
-            with open('txt/{}'.format(file), 'r', encoding='utf8') as f:
-                listOfLines = []
-                lineOf3Pairs = [(1000, 1000) for i in range(3)]
-                numOfVacantPlace = 0
-                for line in f:
-                    predict = False
-                    slavyanka = False
-                    line = line.strip()
-                    if line == 'по прибыт.':
-                        predict = True
-                        hours, minutes = dubki[0]
-                        time = [hours, minutes]
-                    elif line == '----':
-                        time = [404, 404]
-                    elif re.search(pattern=r'\d\d:\d\d',
-                                   string=line) is not None or \
-                            re.search(pattern=r'\d:\d\d',
-                                      string=line) is not None:
-                        if line[-2:] == '**':
-                            slavyanka = True
-                            line = line[:-2]
-                        elif line[-1] == '*':
-                            slavyanka = True
-                            line = line[:-1]
-                        line = list(map(int, line.split(':')))
-                        hours, minutes = int(line[0]), int(line[1])
-                        time = [hours, minutes]
-                    else:
+        dubkiOdintsovoWeek, odintsovoDubkiWeek = [], []
+        dubkiOdintsovoSat, odintsovoDubkiSat = [], []
+        dubkiOdintsovoSun, odintsovoDubkiSun = [], []
+        weekdays = ('week', 'sat', 'sun')
+        currrentListToAppendTime = {'week': (odintsovoDubkiWeek, dubkiOdintsovoWeek),
+                                    'sat': (odintsovoDubkiSat, dubkiOdintsovoSat),
+                                    'sun': (odintsovoDubkiSun, dubkiOdintsovoSun)}
+        pdfCurriculum = pdf.open(filename)
+        indexOfRelevantWeekday = 0
+        for page in pdfCurriculum:
+            if len(page.searchFor('СУББОТА')) != 0:
+                indexOfRelevantWeekday += 1
+            blocks = page.getText('blocks')
+            rawLines = [blocks[i][4] for i in range(len(blocks))]
+            hoursOfPreviousLine = 0
+            for line in rawLines:
+                if re.search(r'\d:\d\d', line) is None:
+                    continue
+                line = line.split()
+                hoursOfCurrentLine = int(line[0].split(':')[0])
+                if hoursOfCurrentLine < hoursOfPreviousLine:
+                    indexOfRelevantWeekday += 1
+                    hoursOfPreviousLine = hoursOfCurrentLine
+                else:
+                    hoursOfPreviousLine = hoursOfCurrentLine
+                timeForDubki = True
+                for time in line:
+                    if time == 'прибыт.':
                         continue
-                    if DtoO:
-                        DtoO = False
-                        dubki = (time, predict, slavyanka)
+                    elif time == '----':
+                        timeForDubki = not timeForDubki
+                        continue
+                    isSlavyanka = False
+                    isAccurate = True
+                    if '*' in time:
+                        time = time.replace('*', '').replace('*', '')
+                        isSlavyanka = True
+                    if time == 'по':
+                        isAccurate = False
+                        time = previousBusDubkiTime
                     else:
-                        DtoO = True
-                        lineOf3Pairs[numOfVacantPlace] = (dubki,
-                                                          (time, predict, slavyanka))
-                        numOfVacantPlace += 1
-
-                    if numOfVacantPlace == 3:
-                        for pair in lineOf3Pairs:
-                            if pair[0][0][0] in {0, 1, 2, 3, 4}:
-                                pair[0][0][0] += 24
-                        lineOf3Pairs.sort()
-                        for pair in lineOf3Pairs:
-                            if pair[0][0][0] in {24, 25, 26, 27, 28}:
-                                pair[0][0][0] -= 24
-                        listOfLines.append(lineOf3Pairs)
-                        lineOf3Pairs = [(1000, 1000) for i in range(3)]
-                        numOfVacantPlace = 0
-
-                valOfPreLineInFirstPos = 0
-                for line in listOfLines:
-                    firstPosOfLine = line[0][0][0][0]
-                    if firstPosOfLine < valOfPreLineInFirstPos:
-                        indexOfWeekday += 1
-                    valOfPreLineInFirstPos = firstPosOfLine
-                    for pair in line:
-                        toPutDtoO[weekday[indexOfWeekday]].append(pair[0])
-                        toPutOtoD[weekday[indexOfWeekday]].append(pair[1])
-
-        self.weekCurriculum = self.listsTopdDataframe(DtoOweekTimes,
-                                                      OtoDweekTimes,
+                        time = list(map(int, time.split(':')))
+                        if timeForDubki:
+                            previousBusDubkiTime = time
+                    infoAboutBus = (time, isAccurate, isSlavyanka)
+                    currrentListToAppendTime[weekdays[indexOfRelevantWeekday]][
+                        int(timeForDubki)].append(infoAboutBus)
+                    timeForDubki = not timeForDubki
+        self.weekCurriculum = self.listsTopdDataframe(dubkiOdintsovoWeek,
+                                                      odintsovoDubkiWeek,
                                                       weekday='week')
-        self.satCurriculum = self.listsTopdDataframe(DtoOsatTimes,
-                                                     OtoDsatTimes,
+        self.satCurriculum = self.listsTopdDataframe(dubkiOdintsovoSat,
+                                                     odintsovoDubkiSat,
                                                      weekday='sat')
-        self.sunCurriculum = self.listsTopdDataframe(DtoOsunTimes,
-                                                     OtoDsunTimes,
+        self.sunCurriculum = self.listsTopdDataframe(dubkiOdintsovoSun,
+                                                     odintsovoDubkiSun,
                                                      weekday='sun')
-
-        delete(os.getcwd() + '/txt')
 
     @staticmethod
     def listsTopdDataframe(timesDubki: list, timesOdintsovo: list,
@@ -249,13 +202,12 @@ class BusesCurriculum:
             for line in timetable:
                 direction = 'Дубки-Одинцово' if timetable is timesDubki \
                             else 'Одинцово-Дубки'
-                if line[0] != [404, 404]:
-                    bus = Bus(timeOfD=line[0],
-                              weekday=weekday,
-                              direction=direction,
-                              isAccurate=not line[1],
-                              isSlavyanka=line[2])
-                    times[direction].append(bus)
+                bus = Bus(timeOfD=line[0],
+                          weekday=weekday,
+                          direction=direction,
+                          isAccurate=line[1],
+                          isSlavyanka=line[2])
+                times[direction].append(bus)
             times[direction].sort()
         curriculum = pd.concat(
             [pd.DataFrame({'Дубки-Одинцово': times['Дубки-Одинцово']}),
@@ -344,13 +296,10 @@ class Train:
                       'sun': []}
 
     def __str__(self):
-        hour = self.mainTime.hour if len(str(self.mainTime.hour)) == 2 \
-            else '0' + str(self.mainTime.hour)
-        minute = self.mainTime.minute if len(str(self.mainTime.minute)) == 2 \
-            else '0' + str(self.mainTime.minute)
-        toPrint = '{} ({}) – {}:{}\n'.format(self.suburbanName,
+        mainTime = self.mainTime.strftime('%H:%M')
+        toPrint = '{} ({}) – {}\n'.format(self.suburbanName,
                                           self.suburbanType,
-                                          hour, minute)
+                                          mainTime)
         for station in self.stops:
             hour = self.stops[station].hour if len(str(self.stops[station].hour)) == 2 \
                 else '0' + str(self.stops[station].hour)
@@ -392,42 +341,26 @@ class Train:
 
     def trainToPrint(self, forWhat: str = 'buses', station: str = None):
         if forWhat == 'buses':
-            hour = self.mainTime.hour if len(str(self.mainTime.hour)) == 2 \
-                else '0' + str(self.mainTime.hour)
-            minute = self.mainTime.minute if len(str(self.mainTime.minute)) == 2 \
-                else '0' + str(self.mainTime.minute)
-            toPrint = '🚆 *{}:{} – {}:\n*'.format(hour, minute,
-                                             self.suburbanName)
+            mainTime = self.mainTime.strftime('%H:%M')
+            toPrint = '🚆 *{} – {}:\n*'.format(mainTime,
+                                               self.suburbanName)
             stations = ('Кунцево', 'Фили', 'Беговая', 'Белорусский вокзал') if self.direction == 'Одинцово-Москва' \
                 else ('Белорусский вокзал', 'Беговая', 'Фили', 'Кунцево')
             for station in stations:
                 if station in self.stops:
-                    hour = self.stops[station].hour if len(str(self.stops[station].hour)) == 2 \
-                        else '0' + str(self.stops[station].hour)
-                    minute = self.stops[station].minute if len(str(self.stops[station].minute)) == 2 \
-                        else '0' + str(self.stops[station].minute)
-                    toPrint += '*{}* – {}:{}, '.format(station,
-                                                       hour,
-                                                       minute)
+                    stopTime = self.stops[station].strftime('%H:%M')
+                    toPrint += '*{}* – {}, '.format(station,
+                                                    stopTime)
             toPrint = toPrint[:-2]
         elif forWhat == 'trains':
             toPrint = '🚆 *{}* ({})'.format(self.suburbanName,
                                             self.suburbanType)
-            toPrint += ':\nотправление в *{}:{}*, прибытие в *{}:{}*'
-            departureHour = self.mainTime.hour if len(str(self.mainTime.hour)) == 2 \
-                else '0' + str(self.mainTime.hour)
-            departureMinute = self.mainTime.minute if len(str(self.mainTime.minute)) == 2 \
-                else '0' + str(self.mainTime.minute)
-            arrivalHour = self.stops[station].hour if len(str(self.stops[station].hour)) == 2 \
-                else '0' + str(self.stops[station].hour)
-            arrivalMinute = self.stops[station].minute if len(str(self.stops[station].minute)) == 2 \
-                else '0' + str(self.stops[station].minute)
+            toPrint += ':\nотправление в *{}*, прибытие в *{}*'
+            departureTime = self.mainTime.strftime('%H:%M')
+            arrivalTime = self.mainTime.strftime('%H:%M')
             if self.direction == 'Москва-Одинцово':
-                departureHour, arrivalHour = arrivalHour, departureHour
-                departureMinute, arrivalMinute = arrivalMinute, departureMinute
-            toPrint = toPrint.format(departureHour, departureMinute,
-                                     arrivalHour, arrivalMinute)
-
+                departureTime, arrivalTime = arrivalTime, departureTime
+            toPrint = toPrint.format(departureTime, arrivalTime)
         return toPrint
 
 
@@ -443,7 +376,7 @@ class TrainsCurriculum:
                     'Фили': 's9600821',
                     'Беговая': 's9601666',
                     'Белорусский вокзал': 's2000006'}
-        apikey = '7cf62f2f-49ce-4194-afae-fe86b8001542'  # os.getenv('APIKEY_YANDEX')
+        apikey = os.getenv('APIKEY_YANDEX')
         url = 'https://api.rasp.yandex.net/v3.0/search/?apikey={}&from={}&to={}&date={}'
         default = '&format=json&limit=1000&lang=ru_RU&system=yandex&show_systems=yandex'
         now = today()
@@ -632,9 +565,7 @@ class Config:
             для электричек - каждый час, для автобусов - каждые 12 часов
         """
         print('Настройка началась...')
-        self.busesCurriculum.getPdf()
-        print('Pdf-файл с расписанием автобусов загружен...')
-        self.busesCurriculum.createCurriculum()
+        self.busesCurriculum.createCurriculum(self.busesCurriculum.getPdf())
         print('Расписание автобусов создано и сохранено...')
         self.trainsCurriculum.createCurriculum()
         print('Расписание электричек загружено и сохранено...')
@@ -686,8 +617,8 @@ class Answers:
 Я бот, с помощью которого ты сможешь узнать расписание ближайших автобусов и электричек.
 Да, тебе не придется лезть в группу в ВК, я сделаю это за тебя.
 Инструкция по работе со мной /help
-
 P.S. По всем вопросам и предложениям писать @eura71'''
+        return answer
 
     def helpAnswer(self):
         answer = '''Доступные команды:
@@ -714,8 +645,8 @@ P.S. По всем вопросам и предложениям писать @eu
         if len(slavyanki) == 0:
             answer = 'Славянок на сегодня больше нет :('
         else:
-            answer = 'Автобусы от Дубков до Славянского бульвара' if direction == 'Дубки-Одинцово' \
-                else 'Автобусы от Славянского бульвара до Дубков'
+            answer = 'Автобусы от Дубков до Славянского бульвара:\n' if direction == 'Дубки-Одинцово' \
+                else 'Автобусы от Славянского бульвара до Дубков:\n'
             for slavyanka in slavyanki:
                 answer += '\n{}\n'.format(slavyanka)
         return answer
@@ -749,10 +680,8 @@ class Admin:
             /check_updates - выдает время последнего обновления расписания
             электричек и автобусов
         """
-        answer = 'Последнее обновление расписания: *{}:{} {}*'.\
-            format(answers.config.lastUpdate.hour,
-                   answers.config.lastUpdate.minute,
-                   answers.config.lastUpdate.strftime('%d.%m.%Y'))
+        answer = 'Последнее обновление расписания: *{}*'.\
+            format(answers.config.lastUpdate.strftime('%H:%M %d.%m.%Y'))
         return answer
 
     def userData(self, userID: int, func: str):
