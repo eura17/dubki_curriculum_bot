@@ -12,31 +12,18 @@ answers = Answers()
 admin = Admin()
 
 
-def exceptionHandlerForAnswers(func):
-    def wrap(message):
-        try:
-            func(message)
-        except Exception as e:
-            bot.send_message(message.chat.id, 'Произошла какая-то ошибка :(')
-            print(e)
-    return wrap
-
-
-@exceptionHandlerForAnswers
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, answers.startAnswer(), parse_mode='Markdown')
     admin.userData(message.chat.id, func='start')
 
 
-@exceptionHandlerForAnswers
 @bot.message_handler(commands=['help'])
 def help_message(message):
     bot.send_message(message.chat.id, answers.helpAnswer(), parse_mode='Markdown')
     admin.userData(message.chat.id, func='help')
 
 
-@exceptionHandlerForAnswers
 @bot.message_handler(commands=['buses'])
 def buses_message(message):
     keyboard1 = telebot.types.ReplyKeyboardMarkup(True, True)
@@ -49,12 +36,14 @@ def buses_message(message):
 def buses_message_main(message):
     commandsBuses = {'Дубки ---> Одинцово': 'Дубки-Одинцово',
                      'Одинцово ---> Дубки': 'Одинцово-Дубки'}
-    bot.send_message(message.chat.id,
-                     answers.busesAnswer(direction=commandsBuses[message.text]),
-                     parse_mode='Markdown')
+    if message.text in commandsBuses:
+        bot.send_message(message.chat.id,
+                        answers.busesAnswer(direction=commandsBuses[message.text]),
+                        parse_mode='Markdown')
+    else:
+        bot.send_message(message.chat.id, 'Произошла ошибка. Пользуйся стандартными кнопками! /buses')
 
 
-@exceptionHandlerForAnswers
 @bot.message_handler(commands=['slavyanki'])
 def slavyanki_message(message):
     keyboard2 = telebot.types.ReplyKeyboardMarkup(True, True)
@@ -65,14 +54,16 @@ def slavyanki_message(message):
 
 
 def slavyanki_message_main(message):
-    commands = {'Дубки ---> Славянский бульвар': 'Дубки-Одинцово',
-                'Славянский бульвар ---> Дубки': 'Одинцово-Дубки'}
-    bot.send_message(message.chat.id,
-                     answers.slavyankiAnswer(commands[message.text]),
-                     parse_mode='Markdown')
+    commandsSlavyanki = {'Дубки ---> Славянский бульвар': 'Дубки-Одинцово',
+                         'Славянский бульвар ---> Дубки': 'Одинцово-Дубки'}
+    if message.text in commandsSlavyanki:
+        bot.send_message(message.chat.id,
+                         answers.slavyankiAnswer(commandsSlavyanki[message.text]),
+                         parse_mode='Markdown')
+    else:
+        bot.send_message(message.chat.id, 'Произошла ошибка. Пользуйся стандартными кнопками! /slavyanki')
 
 
-@exceptionHandlerForAnswers
 @bot.message_handler(commands=['trains'])
 def trains_message(message):
     keyboard3 = telebot.types.ReplyKeyboardMarkup(True, True)
@@ -98,12 +89,14 @@ def trains_message_main(message):
                       'Фили ---> Одинцово': 'Фили-Одинцово',
                       'Беговая ---> Одинцово': 'Беговая-Одинцово',
                       'Белорусский вокзал ---> Одинцово': 'Белорусский вокзал-Одинцово'}
-    bot.send_message(message.chat.id,
-                     answers.trainsAnswer(commandsTrains[message.text]),
-                     parse_mode='Markdown')
+    if message.text in commandsTrains:
+        bot.send_message(message.chat.id,
+                         answers.trainsAnswer(commandsTrains[message.text]),
+                         parse_mode='Markdown')
+    else:
+        bot.send_message(message.chat.id, 'Произошла ошибка. Пользуйся стандартными кнопками! /trains')
 
 
-@exceptionHandlerForAnswers
 @bot.message_handler(commands=['file'])
 def file_message(message):
     doc = open('Расписание.pdf', 'rb')
@@ -111,7 +104,6 @@ def file_message(message):
     admin.userData(message.chat.id, func='file')
 
 
-@exceptionHandlerForAnswers
 @bot.message_handler(commands=['check_updates'])
 def check_updates(message):
     if message.from_user.id == myID:
@@ -120,7 +112,6 @@ def check_updates(message):
         bot.send_message(message.chat.id, 'Недостаточно прав для вызова этой команды.')
 
 
-@exceptionHandlerForAnswers
 @bot.message_handler(commands=['get_statistics'])
 def get_statistics(message):
     admin.createStatisticsXcl()
