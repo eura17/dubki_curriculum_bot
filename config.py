@@ -692,6 +692,7 @@ class Answers:
 Инструкция по работе со мной /help
 
 P.S. По всем вопросам и предложениям писать @eura71'''
+        return answer
 
     def helpAnswer(self):
         answer = '''Доступные команды:
