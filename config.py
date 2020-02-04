@@ -357,7 +357,7 @@ class Train:
                                             self.suburbanType)
             toPrint += ':\nотправление в *{}*, прибытие в *{}*'
             departureTime = self.mainTime.strftime('%H:%M')
-            arrivalTime = self.mainTime.strftime('%H:%M')
+            arrivalTime = self.stops[station].strftime('%H:%M')
             if self.direction == 'Москва-Одинцово':
                 departureTime, arrivalTime = arrivalTime, departureTime
             toPrint = toPrint.format(departureTime, arrivalTime)
