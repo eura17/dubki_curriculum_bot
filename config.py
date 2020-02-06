@@ -579,8 +579,7 @@ class Config:
                     sleep(3600 * 6)
                     if today().hour in (0, 1, 2):
                         sleep(3600 * 3)
-                    self.busesCurriculum.getPdf()
-                    self.busesCurriculum.createCurriculum()
+                    self.busesCurriculum.createCurriculum(self.busesCurriculum.getPdf())
                     self.trainsCurriculum.createCurriculum()
                     self.linkBusesAndTrains()
                     self.lastUpdate = today()
