@@ -126,7 +126,7 @@ class BusesCurriculum:
                 break
         return filename
 
-    def createCurriculum(self, filename: str):
+    def createCurriculum(self):
         """ Парсит txt-файлы mon-fri.txt и sat-sun.txt (из папки txt/)
             и сохраняет расписание в списки с "сырым" расписанием, которые
             впоследствии преобразуются в датафреймы pandas с расписание
@@ -139,7 +139,7 @@ class BusesCurriculum:
         currrentListToAppendTime = {'week': (odintsovoDubkiWeek, dubkiOdintsovoWeek),
                                     'sat': (odintsovoDubkiSat, dubkiOdintsovoSat),
                                     'sun': (odintsovoDubkiSun, dubkiOdintsovoSun)}
-        pdfCurriculum = pdf.open(filename)
+        pdfCurriculum = pdf.open(self.getPdf())
         indexOfRelevantWeekday = 0
         for page in pdfCurriculum:
             if len(page.searchFor('СУББОТА')) != 0:
@@ -565,31 +565,13 @@ class Config:
             для электричек - каждый час, для автобусов - каждые 12 часов
         """
         print('Настройка началась...')
-        self.busesCurriculum.createCurriculum(self.busesCurriculum.getPdf())
+        self.busesCurriculum.createCurriculum()
         print('Расписание автобусов создано и сохранено...')
         self.trainsCurriculum.createCurriculum()
         print('Расписание электричек загружено и сохранено...')
         self.linkBusesAndTrains()
         print('Привязка электричек к автобусам прошла успешно...')
         self.lastUpdate = today()
-
-        def updateCurriculum():
-            with Lock():
-                while True:
-                    sleep(3600 * 6)
-                    if today().hour in (0, 1, 2):
-                        sleep(3600 * 3)
-                    self.busesCurriculum.getPdf()
-                    self.busesCurriculum.createCurriculum()
-                    self.trainsCurriculum.createCurriculum()
-                    self.linkBusesAndTrains()
-                    self.lastUpdate = today()
-
-        updateCurriculumThread = Thread(target=updateCurriculum,
-                                        name='updateCurriculum',
-                                        daemon=True)
-        updateCurriculumThread.start()
-        print('Поток обновления расписания запущен...')
 
         if bool(int((os.getenv('CREATE_DB')))):
             self.createDataBase()
@@ -604,13 +586,33 @@ class Config:
                 print('Проблемы с подключением к базе данных...')
                 print(e)
 
-        print('Первая настройка прошла успешно. Бот готов к работе.')
+
+class UpdateCurriculumThread(Thread):
+    def __init__(self, config):
+        super().__init__(name='updateCurriculumThread')
+        self.config = config
+        self.lastUpdate = today()
+
+    def run(self):
+        print('Поток обновления расписания запущен...')
+        with Lock():
+            while True:
+                sleep(3600 * 6)
+                if today().hour in (0, 1, 2):
+                    sleep(3600 * 3)
+                self.config.busesCurriculum.getPdf()
+                self.config.busesCurriculum.createCurriculum()
+                self.config.trainsCurriculum.createCurriculum()
+                self.lastUpdate = today()
+                print('Расписание обновилось. ({})'.format(today()))
 
 
 class Answers:
     def __init__(self):
         self.config = Config()
         self.config.firstSetup()
+        self.updateBusesCurriculumThread = UpdateCurriculumThread(self.config)
+        print('Первая настройка прошла успешно. Бот готов к работе.')
 
     def startAnswer(self):
         answer = '''Привет, дубчанин!
