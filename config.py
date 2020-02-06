@@ -411,7 +411,7 @@ class TrainsCurriculum:
                     stopTime = departureTime
                     stop = stationFrom
                 if (time[0] in {0, 1, 2} or stopTime[0] in {0, 1, 2}) and \
-                        amountOfTrains >= 30:
+                        amountOfTrains >= 30 and nextDay:
                     continue
 
                 mainTime = dt.datetime(year=now.year,
