@@ -597,7 +597,7 @@ class UpdateCurriculumThread(Thread):
         print('Поток обновления расписания запущен...')
         with Lock():
             while True:
-                sleep(5)
+                sleep(120)
                 if today().hour in (0, 1, 2):
                     sleep(3600 * 3)
                 self.config.busesCurriculum.getPdf()
