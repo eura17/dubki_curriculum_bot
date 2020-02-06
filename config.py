@@ -603,6 +603,7 @@ class UpdateCurriculumThread(Thread):
                 self.config.busesCurriculum.getPdf()
                 self.config.busesCurriculum.createCurriculum()
                 self.config.trainsCurriculum.createCurriculum()
+                self.config.linkBusesAndTrains()
                 self.config.lastUpdate = today()
                 print('Расписание обновилось. ({})'.format(today()))
 
