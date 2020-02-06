@@ -126,7 +126,7 @@ class BusesCurriculum:
                 break
         return filename
 
-    def createCurriculum(self):
+    def createCurriculum(self, filename: str):
         """ Парсит txt-файлы mon-fri.txt и sat-sun.txt (из папки txt/)
             и сохраняет расписание в списки с "сырым" расписанием, которые
             впоследствии преобразуются в датафреймы pandas с расписание
@@ -139,7 +139,7 @@ class BusesCurriculum:
         currrentListToAppendTime = {'week': (odintsovoDubkiWeek, dubkiOdintsovoWeek),
                                     'sat': (odintsovoDubkiSat, dubkiOdintsovoSat),
                                     'sun': (odintsovoDubkiSun, dubkiOdintsovoSun)}
-        pdfCurriculum = pdf.open(self.getPdf())
+        pdfCurriculum = pdf.open(filename)
         indexOfRelevantWeekday = 0
         for page in pdfCurriculum:
             if len(page.searchFor('СУББОТА')) != 0:
@@ -357,7 +357,7 @@ class Train:
                                             self.suburbanType)
             toPrint += ':\nотправление в *{}*, прибытие в *{}*'
             departureTime = self.mainTime.strftime('%H:%M')
-            arrivalTime = self.mainTime.strftime('%H:%M')
+            arrivalTime = self.stops[station].strftime('%H:%M')
             if self.direction == 'Москва-Одинцово':
                 departureTime, arrivalTime = arrivalTime, departureTime
             toPrint = toPrint.format(departureTime, arrivalTime)
@@ -565,13 +565,30 @@ class Config:
             для электричек - каждый час, для автобусов - каждые 12 часов
         """
         print('Настройка началась...')
-        self.busesCurriculum.createCurriculum()
+        self.busesCurriculum.createCurriculum(self.busesCurriculum.getPdf())
         print('Расписание автобусов создано и сохранено...')
         self.trainsCurriculum.createCurriculum()
         print('Расписание электричек загружено и сохранено...')
         self.linkBusesAndTrains()
         print('Привязка электричек к автобусам прошла успешно...')
         self.lastUpdate = today()
+
+        def updateCurriculum():
+            with Lock():
+                while True:
+                    sleep(3600 * 6)
+                    if today().hour in (0, 1, 2):
+                        sleep(3600 * 3)
+                    self.busesCurriculum.createCurriculum(self.busesCurriculum.getPdf())
+                    self.trainsCurriculum.createCurriculum()
+                    self.linkBusesAndTrains()
+                    self.lastUpdate = today()
+
+        updateCurriculumThread = Thread(target=updateCurriculum,
+                                        name='updateCurriculum',
+                                        daemon=True)
+        updateCurriculumThread.start()
+        print('Поток обновления расписания запущен...')
 
         if bool(int((os.getenv('CREATE_DB')))):
             self.createDataBase()
@@ -586,33 +603,13 @@ class Config:
                 print('Проблемы с подключением к базе данных...')
                 print(e)
 
-
-class UpdateCurriculumThread(Thread):
-    def __init__(self, config):
-        super().__init__(name='updateCurriculumThread')
-        self.config = config
-        self.lastUpdate = today()
-
-    def run(self):
-        print('Поток обновления расписания запущен...')
-        with Lock():
-            while True:
-                sleep(3600 * 6)
-                if today().hour in (0, 1, 2):
-                    sleep(3600 * 3)
-                self.config.busesCurriculum.getPdf()
-                self.config.busesCurriculum.createCurriculum()
-                self.config.trainsCurriculum.createCurriculum()
-                self.lastUpdate = today()
-                print('Расписание обновилось. ({})'.format(today()))
+        print('Первая настройка прошла успешно. Бот готов к работе.')
 
 
 class Answers:
     def __init__(self):
         self.config = Config()
         self.config.firstSetup()
-        self.updateBusesCurriculumThread = UpdateCurriculumThread(self.config)
-        print('Первая настройка прошла успешно. Бот готов к работе.')
 
     def startAnswer(self):
         answer = '''Привет, дубчанин!
