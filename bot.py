@@ -29,7 +29,7 @@ def check_error(message):
         commands[message.text](message)
     elif message.text == 'Главное меню':
         keyboard = MENU.main_menu()
-        BOT.send_message(message.chat.id, '', reply_markup=keyboard)
+        BOT.send_message(message.chat.id, 'Главное меню', reply_markup=keyboard)
     else:
         keyboard = MENU.main_menu()
         error_msg = f'Произошла ошибка. ' \
