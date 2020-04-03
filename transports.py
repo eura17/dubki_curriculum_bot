@@ -30,7 +30,7 @@ class Bus(Transport):
         return to_print
 
 
-class Suburban(Transport):
+class Suburban(Transport): 
     def __init__(self, departure_time: list, arrival_time: list,
                  direction: str,
                  suburban_name: str, suburban_type: str,
