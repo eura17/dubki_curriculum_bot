@@ -295,12 +295,25 @@ def get_statistics(message):
         keyboard = MENU.main_menu()
         BOT.send_message(message.chat.id, error_msg, reply_markup=keyboard)
 
+        
+@BOT.message_handler(content_types=['text'])
+def text_messages(message):
+    """ Обработчик для меню и текстовых сообщений
+    """
+    menu_commands = {'Автобусы': buses_message,
+                     'Славянки': slavyanki_message,
+                     'Электрички': suburbans_message,
+                     'Файл': file_message}
+    if message.text in menu_commands:
+        menu_commands[message.text](message)
+    else:
+        other_messages(message)
 
-@BOT.message_handler(content_types=['text',
-                                    'audio', 'sticker', 'video', 'document'])
+
+@BOT.message_handler(content_types=['audio', 'sticker', 'video', 'document'])
 def other_messages(message):
     """ Обработчик для всех остальных сообщений, на которые бот не умеет
-        отвечать
+        отвечать 
     """
     error_msg = 'Я не умею отвечать на такие сообщения :('
     keyboard = MENU.main_menu()
