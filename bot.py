@@ -26,7 +26,7 @@ def check_error(message):
                 '/file': file_message,
                 '/menu': menu_message}
     if message.text in commands:
-        commands[message.text](message)
+        commands[message.text](message) 
     elif message.text == 'Главное меню':
         keyboard = MENU.main_menu()
         BOT.send_message(message.chat.id, 'Главное меню', reply_markup=keyboard)
