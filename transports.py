@@ -48,6 +48,6 @@ class Suburban(Transport):
     def __str__(self):
         departure_time = self.departure_time.strftime('%H:%M')
         arrival_time = self.arrival_time.strftime('%H:%M')
-        to_print = f'🚆 *{departure_time}* – {self.name} ({self.type}) ' \
-                   f'~ {arrival_time}'
+        to_print = f'🚆 *{departure_time}* – {self.name} *({self.type})* ' \
+                   f'~ *{arrival_time}*'
         return to_print
