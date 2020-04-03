@@ -3,7 +3,7 @@
 import datetime as dt
 
 
-def now(delta_hours: int = 0):
+def now(delta_hours: int = 3):
     """ Возвращает текущие дату и время со смещением на разницу во времени
         delta_hours: int
     """
