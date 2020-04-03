@@ -95,8 +95,9 @@ def buses_message_main(message):
             keyboard = MENU.main_menu()
         BOT.send_message(message.chat.id, answer,
                          reply_markup=keyboard, parse_mode='Markdown')
-        BOT.register_next_step_handler(message, suburbans_after_buses_message,
-                                       buses=buses, buses_direction=direction)
+        if len(buses) > 0:
+            BOT.register_next_step_handler(message, suburbans_after_buses_message,
+                                           buses=buses, buses_direction=direction)
     else:
         check_error(message)
 
@@ -220,8 +221,9 @@ def suburbans_message_main(message):
             keyboard = MENU.main_menu()
         BOT.send_message(message.chat.id, answer,
                          reply_markup=keyboard, parse_mode='Markdown')
-        BOT.register_next_step_handler(message, buses_after_suburbans_message,
-                                       suburbans=suburbans)
+        if len(suburbans) > 0:
+            BOT.register_next_step_handler(message, buses_after_suburbans_message,
+                                           suburbans=suburbans)
     else:
         check_error(message)
 
