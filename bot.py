@@ -64,7 +64,7 @@ def menu_message(message):
     """ Отправляет клавиатуру с главным меню
     """
     keyboard = MENU.main_menu()
-    BOT.send_message(message.chat.id, '',
+    BOT.send_message(message.chat.id, 'Главное меню',
                      reply_markup=keyboard, parse_mode='Markdown')
 
 
