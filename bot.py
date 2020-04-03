@@ -26,10 +26,11 @@ def check_error(message):
                 '/file': file_message,
                 '/menu': menu_message}
     if message.text in commands:
-        commands[message.text](message) 
+        commands[message.text](message)
     elif message.text == 'Главное меню':
         keyboard = MENU.main_menu()
-        BOT.send_message(message.chat.id, 'Главное меню', reply_markup=keyboard)
+        BOT.send_message(message.chat.id, 'Главное меню', 
+                         reply_markup=keyboard)
     else:
         keyboard = MENU.main_menu()
         error_msg = f'Произошла ошибка. ' \
@@ -262,12 +263,13 @@ def file_message(message):
     """
     filename = ANSWERS.config.buses_curriculum.filename
     doc = open(filename, 'rb')
-    BOT.send_document(message.chat.id, doc)
+    keyboard = MENU.main_menu()
+    BOT.send_document(message.chat.id, doc, reply_markup=keyboard)
     DATABASE.add_user_data('file', message.chat.id)
 
 
 @BOT.message_handler(commands=['check_updates'])
-def check_updates(message):
+def check_updates_message(message):
     """ Отравляет сообщение, доступное только для админа, с информацией о
         времени последнего обновления расписания
     """
@@ -283,19 +285,20 @@ def check_updates(message):
 
 
 @BOT.message_handler(commands=['statistics'])
-def get_statistics(message):
+def statistics_message(message):
     """ Сохраняет статистику из базы данных в xlsx-файл и отправляет его
     """
     DATABASE.get_statistics_in_xcl()
     doc = open('statistics.xlsx', 'rb')
     if message.from_user.id == ADMIN_ID:
-        BOT.send_document(message.chat.id, doc)
+        keyboard = MENU.main_menu()
+        BOT.send_document(message.chat.id, doc, reply_markup=keyboard)
     else:
         error_msg = 'Недостаточно прав для вызова этой команды.'
         keyboard = MENU.main_menu()
         BOT.send_message(message.chat.id, error_msg, reply_markup=keyboard)
 
-        
+
 @BOT.message_handler(content_types=['text'])
 def text_messages(message):
     """ Обработчик для меню и текстовых сообщений
@@ -313,7 +316,7 @@ def text_messages(message):
 @BOT.message_handler(content_types=['audio', 'sticker', 'video', 'document'])
 def other_messages(message):
     """ Обработчик для всех остальных сообщений, на которые бот не умеет
-        отвечать 
+        отвечать
     """
     error_msg = 'Я не умею отвечать на такие сообщения :('
     keyboard = MENU.main_menu()
