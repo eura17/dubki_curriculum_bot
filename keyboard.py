@@ -5,10 +5,10 @@ from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 class KeyboardMenu:
     def __init__(self):
-        self.keyboard = ReplyKeyboardMarkup(True, True)
+        self.keyboard = ReplyKeyboardMarkup(True)
 
     def reset_keyboard(self):
-        self.keyboard = ReplyKeyboardMarkup(True, True)
+        self.keyboard = ReplyKeyboardMarkup(True)
 
     def main_menu(self):
         self.reset_keyboard()
