@@ -312,7 +312,7 @@ def text_messages(message):
     menu_commands = {'Автобусы': buses_message,
                      'Славянки': slavyanki_message,
                      'Электрички': suburbans_message,
-                     'Файл c расписанием': file_message}
+                     'Файл с расписанием': file_message}
     if message.text in menu_commands:
         menu_commands[message.text](message)
     else:
