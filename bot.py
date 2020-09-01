@@ -90,7 +90,7 @@ def buses_message_main(message):
         direction = possible_answers[message.text]
         answer, buses = ANSWERS.buses_answer(direction)
         if len(buses) > 0:
-            keyboard = MENU.pre_suburbans_after_buses_message_menu()
+            keyboard = MENU.pre_suburbans_after_buses_message_menu(direction)
         else:
             keyboard = MENU.main_menu()
         BOT.send_message(message.chat.id, answer,
@@ -124,12 +124,14 @@ def suburbans_after_buses_message_main(message, buses, buses_direction):
     """
     if buses_direction == 'Дубки-Одинцово':
         possible_answers = {'Одинцово ---> Кунцево': 'Одинцово-Кунцево',
+                            'Одинцово ---> Славянский бульвар': 'Одинцово-Славянский бульвар',
                             'Одинцово ---> Фили': 'Одинцово-Фили',
                             'Одинцово ---> Беговая': 'Одинцово-Беговая',
                             'Одинцово ---> Белорусский вокзал':
                                 'Одинцово-Белорусский вокзал'}
     elif buses_direction == 'Одинцово-Дубки':
         possible_answers = {'Кунцево ---> Одинцово': 'Кунцево-Одинцово',
+                            'Славянский бульвар ---> Одинцово': 'Славянский бульвар-Одинцово',
                             'Фили ---> Одинцово': 'Фили-Одинцово',
                             'Беговая ---> Одинцово': 'Беговая-Одинцово',
                             'Белорусский вокзал ---> Одинцово':
@@ -216,7 +218,7 @@ def suburbans_message_main(message):
         suburbans_direction = possible_answers[message.text]
         answer, suburbans = ANSWERS.suburbans_answer(suburbans_direction)
         if len(suburbans) > 0:
-            keyboard = MENU.pre_buses_after_suburbans_message_menu()
+            keyboard = MENU.pre_buses_after_suburbans_message_menu(suburbans_direction)
         else:
             keyboard = MENU.main_menu()
         BOT.send_message(message.chat.id, answer,
@@ -308,7 +310,7 @@ def text_messages(message):
     menu_commands = {'Автобусы': buses_message,
                      'Славянки': slavyanki_message,
                      'Электрички': suburbans_message,
-                     'Файл': file_message}
+                     'Файл c расписанием': file_message}
     if message.text in menu_commands:
         menu_commands[message.text](message)
     else:
