@@ -38,19 +38,17 @@ class KeyboardMenu:
         self.reset_keyboard()
         if buses_direction == 'Дубки-Одинцово':
             self.keyboard.add(KeyboardButton('Одинцово ---> Кунцево'),
-                              KeyboardButton('Одинцово ---> Славянский бульвар'),
-                              KeyboardButton('Одинцово ---> Фили'))
+                              KeyboardButton('Одинцово ---> Славянский бульвар'))
             self.keyboard.add(KeyboardButton('Одинцово ---> Беговая'),
-                              KeyboardButton(
-                                  'Одинцово ---> Белорусский вокзал'))
+                              KeyboardButton('Одинцово ---> Фили'))
+            self.keyboard.add(KeyboardButton('Одинцово ---> Белорусский вокзал'))
+            
         elif buses_direction == 'Одинцово-Дубки':
-            self.keyboard.add(KeyboardButton(
-                'Белорусский вокзал ---> Одинцово'),
-                              KeyboardButton('Беговая ---> Одинцово'))
-            self.keyboard.add(KeyboardButton('Фили ---> Одинцово'),
-                              KeyboardButton('Славянский бульвар ---> Одинцово'),
-                              KeyboardButton('Кунцево ---> Одинцово'))
-        self.keyboard.add(KeyboardButton('Главное меню'))
+            self.keyboard.add(KeyboardButton('Кунцево ---> Одинцово'),
+                              KeyboardButton('Славянский бульвар ---> Одинцово'))
+            self.keyboard.add(KeyboardButton('Беговая ---> Одинцово'),
+                              KeyboardButton('Фили ---> Одинцово'))
+            self.keyboard.add(KeyboardButton('Белорусский вокзал ---> Одинцово'))
         return self.keyboard
 
     def after_suburbans_after_buses_message_menu(self):
