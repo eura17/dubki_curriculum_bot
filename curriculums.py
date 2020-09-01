@@ -27,7 +27,7 @@ class BusesCurriculum(Curriculum):
         """
         self.get_curriculum_pdf()
         curriculum_pdf = open_pdf(self.filename)
-        weekdays = iter(('weekday', 'saturday', 'sunday'))
+        weekdays = iter(('saturday', 'sunday', 'weekday'))
         pages = []
         is_first_page = True
         for page_pdf in curriculum_pdf:
