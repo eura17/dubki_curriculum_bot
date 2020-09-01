@@ -263,7 +263,7 @@ class SuburbansCurriculum(Curriculum):
         """
         weekdays = iter(('today', 'tomorrow'))
         pages = []
-        stations = ('Кунцево', 'Фили', 'Беговая', 'Белорусский вокзал')
+        stations = ('Кунцево', 'Славянский бульвар', 'Фили', 'Беговая', 'Белорусский вокзал')
         for next_day in False, True:
             suburbans_for_day = []
             current_weekday = next(weekdays)
@@ -309,6 +309,7 @@ class SuburbansCurriculum(Curriculum):
         """
         stations = {'Одинцово': 'c10743',
                     'Кунцево': 's9601728',
+                    'Славянский бульвар': 's9876336',
                     'Фили': 's9600821',
                     'Беговая': 's9601666',
                     'Белорусский вокзал': 's2000006'}
