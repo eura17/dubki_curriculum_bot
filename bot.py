@@ -106,7 +106,7 @@ def suburbans_after_buses_message(message, buses, buses_direction):
     """ Отправляем клавиатуру с выбором направления электричек для поиска
         пересадок
     """
-    if message.text == 'Посмотреть пересадки на электрички':
+    if message.text in ('Посмотреть пересадки на электрички', 'Посмотреть пересадки с электричек'):
         keyboard = MENU.suburbans_after_buses_message_menu(buses_direction)
         BOT.send_message(message.chat.id, 'Выбери направление',
                          reply_markup=keyboard)
@@ -236,7 +236,7 @@ def buses_after_suburbans_message(message, suburbans):
     """ Отправляет список автобусов с удобными пересадками на электрички и
         спрашивает, нужно ли показать все автобусы по этому же направлению
     """
-    if message.text == 'Посмотреть пересадки на автобусы':
+    if message.text in ('Посмотреть пересадки на автобусы', 'Посмотреть пересадки с автобусов'):
         buses_direction = ANSWERS.define_buses_direction_by_suburbans(
             suburbans)
         answer = ANSWERS.buses_after_suburbans_answer(suburbans)
