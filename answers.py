@@ -154,7 +154,7 @@ class Answers:
         """
         slavyanki = self.config.buses_curriculum.get_slavyanki(direction)
         if len(slavyanki) == 0:
-            answer = 'К сожалению, славянок в ближайший час нет :('
+            answer = 'К сожалению, славянок сегодня нет :('
         else:
             grammar = {'Дубки-Одинцово':
                        'Автобусы от Дубков до Славянского бульвара:\n',
