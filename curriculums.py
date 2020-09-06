@@ -245,7 +245,7 @@ class BusesCurriculum(Curriculum):
             return 'weekday'
         elif today == 6 or today == 6 and hour in (0, 1, 2):
             return 'saturday'
-        elif today == 7 and today == 7 and hour in (0, 1, 2):
+        elif today == 7 or today == 7 and hour in (0, 1, 2):
             return 'sunday'
 
 
