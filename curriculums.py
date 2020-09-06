@@ -241,12 +241,20 @@ class BusesCurriculum(Curriculum):
         """
         today = now().isoweekday()
         hour = now().hour
-        if today in (1, 2, 3, 4, 5) or today == 5 and hour in (0, 1, 2):
-            return 'weekday'
-        elif today == 6 or today == 6 and hour in (0, 1, 2):
-            return 'saturday'
-        elif today == 7 or today == 7 and hour in (0, 1, 2):
-            return 'sunday'
+        if hour in (0, 1, 2):
+            if today == 1:
+                return 'sunday'
+            elif today == 6:
+                return 'weekday'
+            elif today == 7:
+                return 'saturday'
+        else:
+            if today in (1, 2, 3, 4, 5):
+                return 'weekday'
+            elif today == 6:
+                return 'saturday'
+            elif today == 7:
+                return 'sunday'
 
 
 class SuburbansCurriculum(Curriculum):
