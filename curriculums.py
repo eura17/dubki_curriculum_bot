@@ -155,6 +155,7 @@ class BusesCurriculum(Curriculum):
             is_slavyanka: bool, точное ли время отправления is_accurate: bool
         """
         is_slavyanka, bus_time = self.is_slavyanka(bus_time)
+        is_x2, bus_time = self.is_x2(bus_time)
         is_accurate, bus_time = self.is_accurate(bus_time)
         if is_accurate:
             departure_time = list(map(int, bus_time.split(':')))
@@ -168,6 +169,15 @@ class BusesCurriculum(Curriculum):
         """
         if '*' in bus:
             bus = bus.replace('*', '').replace('*', '')
+            return True, bus
+        return False, bus
+    
+    @staticmethod
+    def is_x2(bus: str):
+        """ Принимает автобус и убирает (x2)
+        """
+        if '(х2)' in bus:
+            bus = bus.replace('(х2)', '')
             return True, bus
         return False, bus
 
